@@ -1,5 +1,5 @@
 import json
-
+from environs import Env
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, ContentType
@@ -13,16 +13,20 @@ from aiogram.types import (
 
 
 """Вытаскиваем токен бота"""
-def create_bot(config_file='token.json'):
-    with open(config_file, 'r') as file:
-        config = json.load(file)
-    return Bot(token=config['token_bot'])
+# def create_bot(config_file='token.json'):
+#     with open(config_file, 'r') as file:
+#         config = json.load(file)
+#     return Bot(token=config['token_bot'])
+env = Env()
+env.read_env()
+
+bot_token = env('BOT_TOKEN')
 
 """Вытаскиваем список фильмов"""
 
 
 """Создаем объекты бота и диспетчера"""
-bot = create_bot()
+bot = Bot(token=bot_token)
 dp = Dispatcher()
 
 """Обрабатываем меню"""
