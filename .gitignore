@@ -2,3 +2,4 @@
 token.json
 movies.json
 .env
+.env.example
