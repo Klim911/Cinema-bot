@@ -6,14 +6,8 @@ from aiogram.fsm.state import State, StatesGroup, default_state
 from aiogram.types import Message, ContentType
 
 from lexicon.lexicon import LEXICON
+from states import GeneralConditions
 
-# Главное меню
-# Создаём класс для группы состояний главного меню
-class ChoiceOfFilms(StatesGroup):         # Выбор фильмов
-    # Перечисляем возможные состояния главного меню
-    first_choice = State()          # Состояние первого выбора в главном меню
-    search_for_movies = State()     # Состояние кнопки "поиск фильмов"
-    list_of_films = State()         # Состояние кнопки "список фильмов"
 
 router = Router()
 """Обрабатываем команду start"""
@@ -24,13 +18,13 @@ async def process_start_command(message: Message):
     await message.answer(text=LEXICON["/start"])
 
 """Обрабатываем команду help"""
-# Этот хэндлер будет срабатывать на команду /help в состоянии по умолчанию, кроме состояния по умолчанию и сообщать
+# Этот хэндлер будет срабатывать на команду /help в состоянии по умолчанию и сообщать
 # что вы можете сейчас сделать
 @router.message(Command(commands="/help"), StateFilter(default_state))
 async def process_help_command():
     pass
 
-# Этот хэндлер будет срабатывать на команду "/cancel" в любых состояниях, кроме состояния по умолчанию и выполнять
+# Этот хэндлер будет срабатывать на команду "cancel" в любых состояниях, кроме состояния по умолчанию и выполнять
 # действие назад.
 @router.message(Command(commands="cancel"), ~StateFilter(default_state))
 async def process_cancel_command(massage: Message, state: FSMContext):
@@ -42,4 +36,4 @@ async def process_cancel_command(massage: Message, state: FSMContext):
 async def process_go_command(message: Message, state: FSMContext):
     await message.answer(text=LEXICON["go"])
     # Устанавливаем состояние первого выбора в главном меню
-    await state.set_state(ChoiceOfFilms.first_choice)
+    await state.set_state(GeneralConditions.first_choice)
