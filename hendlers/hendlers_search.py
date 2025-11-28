@@ -10,11 +10,11 @@ from keyboards.keyboards import *
 
 
 
-search_router = Router()
+router = Router()
 
 # Этот хэендлер будет срабатывать, если нажата кнопка "Поиск фильма" и переводить в состояние
 # ожидания выбора года
-@search_router.message(StateFilter(GeneralConditions.first_choice))
+@router.message(StateFilter(GeneralConditions.first_choice))
 async def process_select_year_command(message: Message, state: FSMContext):       # Нажатие на кнопку поиск фильма
     await message.answer(text=LEXICON["year"], reply_markup=years_films)
     # Устанавливаем состояние выбора года
@@ -22,30 +22,30 @@ async def process_select_year_command(message: Message, state: FSMContext):     
 
 
 # Этот хэндлер будет срабатывать если выбран один из годов и переводить в состояние выбора жанра
-@search_router.message(StateFilter(GeneralConditions.select_year))
+@router.message(StateFilter(GeneralConditions.select_year))
 async def process_select_genre_command(message: Message, state: FSMContext):
-    await message.answer(text="genre", reply_markup=genre_films)
+    await message.answer(text=LEXICON["genre"], reply_markup=genre_films)
     # Устанавливаем состояние выбора жанра
     await state.set_state(GeneralConditions.select_genre)
 
 
 # Этот хэндлер будет срабатывать если выбран один из жанров и переводить в состояние выбора рейтинга
-@search_router.message(StateFilter(GeneralConditions.select_genre))
-async def process_select_genre_command(state: FSMContext):
-    pass
+@router.message(StateFilter(GeneralConditions.select_genre))
+async def process_select_rating_command(message: Message, state: FSMContext):
+    await message.answer(text=LEXICON["rating"], reply_markup=rating_films)
     # Устанавливаем состояние выбора рейтинга
     await state.set_state(GeneralConditions.select_rating)
 
 
 # Этот хэндлер будет срабатывать если выбран рейтинг и переводить в состояние выбора времени просмотра
-@search_router.message(StateFilter(GeneralConditions.select_rating))
-async def process_select_time_command(state: FSMContext):
-    pass
+@router.message(StateFilter(GeneralConditions.select_rating))
+async def process_select_time_command(message: Message, state: FSMContext):
+    await message.answer(text=LEXICON["time"], reply_markup=time_films)
     # Устанавливаем состояние выбора времени просмотра
     await state.set_state(GeneralConditions.select_time)
 
 
-# Этот хэндлер будет срабатывать если выбрано время просмотра и переводить в ???
-@search_router.message(StateFilter(GeneralConditions.select_time))
-async def process_select_review_command(state: FSMContext):
-    pass
+# # Этот хэндлер будет срабатывать если выбрано время просмотра и переводить в ???
+# @search_router.message(StateFilter(GeneralConditions.select_time))
+# async def process_select_review_command(state: FSMContext):
+#     pass
