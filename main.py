@@ -8,6 +8,7 @@ from config.config import Config, load_config
 from environs import Env
 from hendlers import hendlers_main, hendlers_search
 from hendlers.states import GeneralConditions
+from hendlers import routers
 
 
 env = Env()     # Создаем экземпляр класса Env
@@ -38,8 +39,11 @@ async def main():
     dp = Dispatcher()
 
     # Регистриуем роутеры в диспетчере
-    dp.include_router(hendlers_main.router)
-    dp.include_router(hendlers_search.router)
+    # dp.include_router(hendlers_main.router)
+    # dp.include_router(hendlers_search.router)
+    for router in routers:
+        dp.include_router(router)
+
 
     # Пропускаем накопившиеся апдейты и запускаем polling
     await bot.delete_webhook(drop_pending_updates=True)
