@@ -16,9 +16,8 @@ router = Router()
 # главного меню
 @router.message(CommandStart(), StateFilter(default_state))
 async def process_start_command(message: Message, state: FSMContext):
-    await message.answer(text=LEXICON["/start"], reply_markup=main_builder)
-    # Устанавливаем состояние первого выбора в главном меню
-    await state.set_state(GeneralConditions.first_choice)
+    await message.answer(text=LEXICON["/start"])
+
 
 """Обрабатываем команду help"""
 # Этот хэндлер будет срабатывать на команду /help в состоянии по умолчанию и сообщать
@@ -30,16 +29,12 @@ async def process_help_command(message: Message):
 
 # Этот хэндлер будет срабатывать на команду "go" и переводить бота в состояние первого выбора в главном меню,
 # после отправки этой команды, для пользователя откроются кнопки
-@router.message((F.text == "go"), StateFilter(default_state))
+@router.message(Command(commands="go"), StateFilter(default_state))
 async def process_go_command(message: Message, state: FSMContext):
-    await message.answer(text=LEXICON["go"], reply_markup=main_builder)
+    await message.answer(text=LEXICON["/go"], reply_markup=main_builder)
     # Устанавливаем состояние первого выбора в главном меню
     await state.set_state(GeneralConditions.first_choice)
 
-# # Этот хэндлер будет срабатывать на любые сообщения, кроме тех
-# # для которых есть отдельные хэндлеры, вне состояний
-# @router.message(StateFilter(default_state))
-# async def send_echo(message: Message, state: FSMContext):
-#     await message.answer(text=LEXICON["/start"], reply_markup=main_builder)
-#     # Устанавливаем состояние первого выбора в главном меню
-#     await state.set_state(GeneralConditions.first_choice)
+@router.message(StateFilter(default_state))
+async def process_unknown_message(message: Message, state: FSMContext):
+    await message.answer(text=LEXICON["please"])

@@ -30,7 +30,7 @@ years_films = InlineKeyboardMarkup(inline_keyboard=[[years_1], [years_2], [years
 comedy = InlineKeyboardButton(text="😁 comedy", callback_data="genre_comedy")
 thriller = InlineKeyboardButton(text="😱 thriller", callback_data="genre_thriller")
 detective = InlineKeyboardButton(text="🕵️ detective", callback_data="genre_detective")
-drama = InlineKeyboardButton(text="🕵️ detective", callback_data="genre_drama")
+drama = InlineKeyboardButton(text="🎭 drama", callback_data="genre_drama")
 horror = InlineKeyboardButton(text="🧟 horror", callback_data="genre_horror")
 adventure = InlineKeyboardButton(text="🎢 adventure", callback_data="genre_adventure")
 action = InlineKeyboardButton(text="💥 action", callback_data="genre_action")
@@ -38,7 +38,7 @@ pass_2 = InlineKeyboardButton(text="Пропуск", callback_data="genre_pass")
 back_2 = InlineKeyboardButton(text="Назад", callback_data="genre_back")
 # Создаем объект инлайн-клавиатуры связанный с жанрами
 genre_films = InlineKeyboardMarkup(inline_keyboard=[
-    [comedy], [thriller], [detective], [drama], [horror], [adventure], [action], [pass_2], [back_1]
+    [comedy], [thriller], [detective], [drama], [horror], [adventure], [action], [pass_2], [back_2]
 ])
 
 # Создаем инлайн кнопки в разделе "рейтинг"
