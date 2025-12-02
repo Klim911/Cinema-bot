@@ -1,3 +1,4 @@
+print(f"=== Загрузка hendlers_search.py ===")
 from aiogram import F, Router, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -7,6 +8,7 @@ from aiogram.types import Message, ContentType, CallbackQuery
 from .states import GeneralConditions
 from lexicon.lexicon import LEXICON
 from keyboards.keyboards import *
+from .film_database import FilmDatabase
 
 
 

@@ -6,8 +6,6 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from config.config import Config, load_config
 from environs import Env
-from hendlers import hendlers_main, hendlers_search
-from hendlers.states import GeneralConditions
 from hendlers import routers
 
 
