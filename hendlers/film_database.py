@@ -9,13 +9,16 @@ class FilmDatabase:
         with open(json_file, "r", encoding="utf-8") as f:
             self.data = json.load(f)
 
+    def films(self):
+        self.films = self.data["films"]
+
     def convert_year_callback(self, year_data: str) -> Optional[str]:
         """Преобразуем callback_data годов в диапазон лет"""
         renge_of_years = {              # - диапазон лет
-            "years_90": "1990 - 1999",
-            "years_2000": "2000 - 2009",
-            "years_2010": "2010 - 2019",
-            "years_2020": "years_2010",
+            "years_90": [1990, 1999],
+            "years_2000": [2000, 2009],
+            "years_2010": [2010, 2019],
+            "years_2020": [2020, 2025],
             "year_pass": None           #Пропуск - любой год
         }
         return renge_of_years.get(year_data)
@@ -54,3 +57,11 @@ class FilmDatabase:
             "time_pass": None       # Пропуск - любое время
         }
         return max_time.get(time_data)
+
+    def search_films(self,          # - поиск фильмов
+                     year_callback: str = None,
+                     genre_callback: str = None,
+                     rating_callback: str = None,
+                     time_callback: str = None) - > List[Dict]:
+    """Ищем фильмы по выбранным критериям. Если callback будет pass - этот критерий будет игнорироваться"""
+    filtered_films = self.films.copy()

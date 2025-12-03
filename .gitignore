@@ -3,3 +3,4 @@ token.json
 movies.json
 .env
 .env.example
+.\__pycache__\
