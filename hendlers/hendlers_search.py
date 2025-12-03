@@ -1,4 +1,3 @@
-print(f"=== Загрузка hendlers_search.py ===")
 from aiogram import F, Router, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -9,11 +8,12 @@ from .states import GeneralConditions
 from lexicon.lexicon import LEXICON
 from keyboards.keyboards import *
 from .film_database import FilmDatabase
+from .film_database import get_readable_criteria
 
 
 
 router = Router()
-
+db = FilmDatabase("movies.json")
 # Этот хэендлер будет срабатывать, если нажата кнопка "Поиск фильма" и переводить в состояние
 # ожидания выбора года
 @router.message(StateFilter(GeneralConditions.first_choice))
@@ -103,11 +103,44 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
     if time_data in {"time_short", "time_average", "time_long", "time_very_long", "time_pass"}:
         # Сохраняем выбранный жанр
         await state.update_data(time=time_data)
-        # Переходим к следующему шагу - выбору сортировки по рейтингу или выбору сортировки по лайкам
-        all_choise = await state.get_data()
-        await callback.message.edit_text(text=f"Все выборы пользователя: {all_choise}")
-        # Устанавливаем состояние сортировки по рейтингу или состояние сортировки по лайкам
-        await state.set_state(GeneralConditions.select_sorting_rating or GeneralConditions.select_sorting_likes)
+
+        # Получаем все выборы пользователя
+        user_choices = await state.get_data()
+        separator = "<code>────────────────────────────────</code>"
+
+        # Получаем читаемые названия
+        readable = get_readable_criteria(
+            year_callback=user_choices.get("year"),
+            genre_callback=user_choices.get("genre"),
+            rating_callback=user_choices.get("rating"),
+            time_callback=time_data
+        )
+        # Ищем фильмы по всем критериям
+        results = db.search_films(
+            year_callback=user_choices.get("year"),
+            genre_callback=user_choices.get("genre"),
+            rating_callback=user_choices.get("rating"),
+            time_callback=time_data
+        )
+        if results:
+            kriter = (f"<b>Ваши критерии: </b>\n"
+                          f"📅Год: {readable["year"]}\n"
+                          f"🎭Жанр: {readable["genre"]}\n"
+                          f"⭐️Рейтинг: {readable["rating"]}\n"
+                          f"Время: {readable["time"]}\n"
+                          f"{separator}")
+            films_text = "\n\n".join([
+                f"{i+1}. 🎬{film['title']}\n📅Год: {film['years']}\n"
+                f"⭐️Рейтинг: {film['ratings']}/10\n"
+                f"⏱️Длительность: {film['duration']}\n"
+                f"🎭Жанры: {', '.join(film['genres'])}"
+                for i, film in enumerate(results[:10])
+            ])
+            await callback.message.edit_text(text=f"{kriter}\n<b>Список фильмов по вашим критериям: </b>\n{films_text}")
+        else:
+            await callback.message.edit_text(text=LEXICON["no_results"])
+        # # Устанавливаем состояние сортировки по рейтингу или состояние сортировки по лайкам
+        # await state.set_state(GeneralConditions.select_sorting_rating or GeneralConditions.select_sorting_likes)
     elif time_data == "time_back":
         # Кнопка "Назад". Устанавливаем состояние выбора рейтинга и появление кнопок выбора рейтинга
         await callback.message.edit_text(text=LEXICON["rating"], reply_markup=rating_films)
