@@ -7,8 +7,8 @@ from aiogram.types import Message, ContentType, CallbackQuery
 from .states import GeneralConditions
 from lexicon.lexicon import LEXICON
 from keyboards.keyboards import *
-from .film_database import FilmDatabase
-from .film_database import get_readable_criteria
+from .film_database import *
+
 
 
 
@@ -136,11 +136,14 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
                 f"🎭Жанры: {', '.join(film['genres'])}"
                 for i, film in enumerate(results[:10])
             ])
-            await callback.message.edit_text(text=f"{kriter}\n<b>Список фильмов по вашим критериям: </b>\n{films_text}")
+            await callback.message.edit_text(
+                text=f"{kriter}\n<b>Список фильмов по вашим критериям: </b>\n{films_text}",
+                reply_markup=sort_films
+            )
         else:
             await callback.message.edit_text(text=LEXICON["no_results"])
-        # # Устанавливаем состояние сортировки по рейтингу или состояние сортировки по лайкам
-        # await state.set_state(GeneralConditions.select_sorting_rating or GeneralConditions.select_sorting_likes)
+        # Устанавливаем состояние показа результатов
+        await state.set_state(GeneralConditions.showing_results)
     elif time_data == "time_back":
         # Кнопка "Назад". Устанавливаем состояние выбора рейтинга и появление кнопок выбора рейтинга
         await callback.message.edit_text(text=LEXICON["rating"], reply_markup=rating_films)

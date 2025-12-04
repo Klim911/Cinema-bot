@@ -59,3 +59,11 @@ pass_4 = InlineKeyboardButton(text="Пропуск", callback_data="time_pass")
 back_4 = InlineKeyboardButton(text="Назад", callback_data="time_back")
 # Создаем объект инлайн-клавиатуры связанный с временем просмотра
 time_films = InlineKeyboardMarkup(inline_keyboard=[[short], [t_average], [long], [very_long], [pass_4], [back_4]])
+
+# Создаем инлайн кнопки в разделе "показ результатов", то есть когда появляется список по критериям
+sort_rating = InlineKeyboardButton(text="Отсортировать по рейтингу ⭐️", callback_data="sorted_rating")
+sort_year = InlineKeyboardButton(text="Отсортировать по году 📅", callback_data="sorted_year")
+sort_like = InlineKeyboardButton(text="Отсортировать по лайкам 👍", callback_data="sorted_like")
+review = InlineKeyboardButton(text="Обзор фильмов 👀", callback_data="review_film")
+# # Создаем объект инлайн-клавиатуры связанный с сортировкой
+sort_films = InlineKeyboardMarkup(inline_keyboard=[[sort_rating], [sort_year], [sort_like], [review]])
