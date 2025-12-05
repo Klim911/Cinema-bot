@@ -122,6 +122,15 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
             rating_callback=user_choices.get("rating"),
             time_callback=time_data
         )
+        # Сохраняем результат списка фильмов, выбранные пользователем по его критериям
+        await state.update_data(current_films=results,
+                                search_criteria={
+                                    "year": user_choices.get("year"),
+                                    "genre": user_choices.get("genre"),
+                                    "rating": user_choices.get("rating"),
+                                    "time": time_data
+                                })
+
         if results:
             kriter = (f"<b>Ваши критерии: </b>\n"
                           f"📅Год: {readable["year"]}\n"
@@ -129,24 +138,22 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
                           f"⭐️Рейтинг: {readable["rating"]}\n"
                           f"Время: {readable["time"]}\n"
                           f"{separator}")
-            films_text = "\n\n".join([
-                f"{i+1}. 🎬{film['title']}\n📅Год: {film['years']}\n"
-                f"⭐️Рейтинг: {film['ratings']}/10\n"
-                f"⏱️Длительность: {film['duration']}\n"
-                f"🎭Жанры: {', '.join(film['genres'])}"
-                for i, film in enumerate(results[:10])
-            ])
+
+            films_text = format_films_list(results)
             await callback.message.edit_text(
                 text=f"{kriter}\n<b>Список фильмов по вашим критериям: </b>\n{films_text}",
                 reply_markup=sort_films
             )
+            # Устанавливаем состояние показа результатов
+            await state.set_state(GeneralConditions.showing_results)
         else:
-            await callback.message.edit_text(text=LEXICON["no_results"])
-        # Устанавливаем состояние показа результатов
-        await state.set_state(GeneralConditions.showing_results)
+            await callback.message.edit_text(text=LEXICON["no_results"], reply_markup=main_builder)
+            # Устанавливаем состояние первого выбора, откроются кнопки главного меню
+            await state.set_state(GeneralConditions.first_choice)
     elif time_data == "time_back":
         # Кнопка "Назад". Устанавливаем состояние выбора рейтинга и появление кнопок выбора рейтинга
         await callback.message.edit_text(text=LEXICON["rating"], reply_markup=rating_films)
+        # Устанавливаем состояние выбора рейтинга
         await state.set_state(GeneralConditions.select_rating)
     await callback.answer()
 
@@ -154,3 +161,24 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
 @router.message(GeneralConditions.select_time)
 async def process_unknown_input_in_time_state(message: Message):
     await message.answer(text=LEXICON["no_time"], reply_markup=time_films)
+
+@router.callback_query(StateFilter(GeneralConditions.showing_results))
+async def process_sorting_selection(callback: CallbackQuery, state: FSMContext): # Обработать выбор сортировки
+    # Получаем данные из callback_data и обрабатываем варианты
+    sort_data = callback.data
+    user_data = await state.get_data()
+    if sort_data == "sorted_rating":
+        # Берем сохраненные фильмы
+        films = user_data.get("current_films")
+        list_films = sorting_selected_films_rating(films.copy())
+        films_text = format_films_list(list_films)
+        await callback.message.edit_text(text=films_text)
+    elif sort_data == "sorted_year":
+        # Берем сохраненные фильмы
+        films = user_data.get("current_films")
+        list_films = sorting_selected_films_years(films.copy())
+        films_text = format_films_list(list_films)
+        await callback.message.edit_text(text=films_text)
+    elif sort_data == "sorted_like":
+        pass
+    await callback.answer()
