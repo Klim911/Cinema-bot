@@ -95,7 +95,7 @@ async def process_unknown_input_in_rating_state(message: Message):
     await message.answer(text=LEXICON["no_rating"], reply_markup=rating_films)
 
 
-# Этот хэндлер будет срабатывать если выбрано время просмотра и переводить в ???
+# Этот хэндлер будет срабатывать если выбрано время просмотра и переводить в состояние "показ результатов"
 @router.callback_query(StateFilter(GeneralConditions.select_time))
 async def process_select_time_command(callback: CallbackQuery, state: FSMContext): # Команда выбора процесса времени
     # Получаем данные из callback_data и обрабатываем варианты
@@ -162,6 +162,8 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
 async def process_unknown_input_in_time_state(message: Message):
     await message.answer(text=LEXICON["no_time"], reply_markup=time_films)
 
+# Этот хэндлер будет срабатывать когда будет виден список рекомендаций и когда пользователь захочет отсортировать
+# список
 @router.callback_query(StateFilter(GeneralConditions.showing_results))
 async def process_sorting_selection(callback: CallbackQuery, state: FSMContext): # Обработать выбор сортировки
     # Получаем данные из callback_data и обрабатываем варианты
