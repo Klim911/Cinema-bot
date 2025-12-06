@@ -1,5 +1,5 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from lexicon.lexicon import LEXICON
 
 # ----------Создаем клавиатуру главного меню----------
@@ -64,6 +64,23 @@ time_films = InlineKeyboardMarkup(inline_keyboard=[[short], [t_average], [long],
 sort_rating = InlineKeyboardButton(text="Отсортировать по рейтингу ⭐️", callback_data="sorted_rating")
 sort_year = InlineKeyboardButton(text="Отсортировать по году 📅", callback_data="sorted_year")
 sort_like = InlineKeyboardButton(text="Отсортировать по лайкам 👍", callback_data="sorted_like")
-review = InlineKeyboardButton(text="Обзор фильмов 👀", callback_data="review_film")
+review = InlineKeyboardButton(text="Трейлер фильма 👀", callback_data="review_film")
 # # Создаем объект инлайн-клавиатуры связанный с сортировкой
 sort_films = InlineKeyboardMarkup(inline_keyboard=[[sort_rating], [sort_year], [sort_like], [review]])
+
+# Создаем клавиатуру для просмотра трейлера
+def get_trailer_keyboard(trailer_url: str | None = None) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    if trailer_url:
+        # URL-кнопка для открытия трейлера
+        builder.button(text="🎬 Смотреть трейлер", url=trailer_url)
+    else:
+        # Если трейлера нет
+        builder.button(text="🔍 Трейлер не найден", callback_data="no_trailer")
+    return builder.as_markup()
+
+# Клавиатура только с кнопкой "назад к списку"
+def get_back_to_list_keyboard() -> InlineKeyboardMarkup:
+    back = InlineKeyboardButton(text="🔙 Назад к списку", callback_data="back_to_list")
+    back_builder = InlineKeyboardMarkup(inline_keyboard=[[back]])
+    return back_builder

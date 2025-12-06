@@ -14,4 +14,4 @@ class GeneralConditions(StatesGroup):       # Общие состояния
     select_sorting_rating = State() # Состояние ожидания выбора сортировки по рейтингу
     select_sorting_likes = State()  # Состояние ожидания выбора сортировки по лайкам
     showing_results = State()       # Показ результатов
-
+    film_review = State()           # Состояние ожидания выбора обзора фильма
