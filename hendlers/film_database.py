@@ -148,3 +148,23 @@ def get_readable_criteria(
         "rating": rating_mapping.get(rating_callback, "Любой рейтинг") if rating_callback else "Любой рейтинг",
         "time": time_mapping.get(time_callback, "Любая длительность") if time_callback else "Любая длительность"
     }
+
+def format_films_list(films: list, limit: int = 10) -> str:
+    """Форматирует список фильмов в текст для сообщения"""
+    films_text = "\n\n".join([
+                    f"{i+1}. 🎬{film['title']}\n📅Год: {film['years']}\n"
+                    f"⭐️Рейтинг: {film['ratings']}/10\n"
+                    f"⏱️Длительность: {film['duration']}\n"
+                    f"🎭Жанры: {', '.join(film['genres'])}"
+                    for i, film in enumerate(films[:limit])
+                ])
+    return films_text
+
+
+def sorting_selected_films_rating(data):
+    sorted_films = sorted(data, key=lambda film: (-film["ratings"]))
+    return sorted_films
+
+def sorting_selected_films_years(data):
+    sorted_films = sorted(data, key=lambda film: -int(film["years"]))
+    return sorted_films
