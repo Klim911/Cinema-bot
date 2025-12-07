@@ -1,4 +1,6 @@
 import json
+import aiofiles
+import asyncio
 from typing import List, Dict, Optional
 
 
@@ -168,3 +170,23 @@ def sorting_selected_films_rating(data):
 def sorting_selected_films_years(data):
     sorted_films = sorted(data, key=lambda film: -int(film["years"]))
     return sorted_films
+
+
+async def async_add_like_to_film(film_title: str, json_file_path: str = "movies.json"):
+    # Чтение файла асинхронно
+    async with aiofiles.open(json_file_path, 'r', encoding='utf-8') as f:
+        content = await f.read()
+        data = json.loads(content)
+
+    # Поиск и изменение
+    for film in data["films"]:
+        if film["title"].lower() == film_title.lower():
+            film["likes"] = film.get("likes", 0) + 1
+            new_likes = film["likes"]
+            break
+    else:
+        return None
+    # Запись обратно
+    async with aiofiles.open(json_file_path, 'w', encoding='utf-8') as f:
+        await f.write(json.dumps(data, ensure_ascii=False, indent=2))
+    return new_likes

@@ -10,8 +10,6 @@ from lexicon.lexicon import LEXICON
 from keyboards.keyboards import *
 from .film_database import *
 # Создаем клавиатуру с кнопкой трейлера
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 
@@ -147,6 +145,8 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
                 text=f"{kriter}\n<b>Список фильмов по вашим критериям: </b>\n{films_text}",
                 reply_markup=sort_films
             )
+            # Сохраняем список фильмов
+            await state.update_data(films=films_text)
             # Устанавливаем состояние показа результатов
             await state.set_state(GeneralConditions.showing_results)
         else:
@@ -175,8 +175,8 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
     if sort_data == "sorted_rating":
         # Берем сохраненные фильмы
         films = user_data.get("current_films")
-        list_films = sorting_selected_films_rating(films.copy())
-        films_text = format_films_list(list_films)
+        list_films1 = sorting_selected_films_rating(films.copy())
+        films_text = format_films_list(list_films1)
         # Выводим отсортированный список по рейтингу
         await callback.message.edit_text(text=films_text, reply_markup=sort_films)
         # Остаемся в том же состоянии
@@ -184,8 +184,8 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
     elif sort_data == "sorted_year":
         # Берем сохраненные фильмы
         films = user_data.get("current_films")
-        list_films = sorting_selected_films_years(films.copy())
-        films_text = format_films_list(list_films)
+        list_films2 = sorting_selected_films_years(films.copy())
+        films_text = format_films_list(list_films2)
         # Выводим отсортированный список по году
         await callback.message.edit_text(text=films_text, reply_markup=sort_films)
         # Остаемся в том же состоянии
@@ -224,7 +224,7 @@ async def process_film_number(message: Message, state: FSMContext):
             trailer_url = selected_film.get("trailer_url")
             # Формируем информацию о фильме
             film_info = (
-                f"🎬 <b>{selected_film['title']}</b>\n"
+                f"🎬 {selected_film['title']}\n"
                 f"📅 Год: {selected_film['years']}\n"
                 f"⭐ Рейтинг: {selected_film['ratings']}/10\n"
                 f"⏱ Длительность: {selected_film['duration']} мин\n"
@@ -246,18 +246,42 @@ async def process_film_number(message: Message, state: FSMContext):
                 parse_mode="HTML"
             )
             await state.update_data(selected_film=selected_film)
+            # Сохраняем состояние просмотра трейлера
+            await state.set_state(GeneralConditions.film_trailer)
         else:
             # Номер вне диапазона
-            await message.answer(
-                text=f"❌ Номер должен быть от 1 до {len(films)}.\n"
-                     f"Пожалуйста, введите номер фильма из списка:",
-                reply_markup=get_back_to_list_keyboard()
-            )
+            await message.answer(text=f"❌ Номер должен быть от 1 до {len(films)}.\n"
+                     f"Пожалуйста, введите номер фильма из списка:")
 
     except ValueError:
         # Пользователь ввел не число
-        await message.answer(
-            text="❌ Пожалуйста, введите номер фильма (только цифру).\n"
-                 f"Например: 1, 2, 3 и т.д.",
-            reply_markup=get_back_to_list_keyboard()
-        )
+        await message.answer(text="❌ Пожалуйста, введите номер фильма (только цифру).\n"
+                 f"Например: 1, 2, 3 и т.д.")
+
+# Этот хэндлер будет срабатывать, когда пользователь нажмет на просмотр трейлера, обработаем нажатие на лайк и назад,
+# а также возможность начать новый поиск
+@router.callback_query(StateFilter(GeneralConditions.film_trailer))
+async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMContext):
+    trailer_data = callback.data
+    if trailer_data == "back_list":
+        # Получаем выбранный результат списка фильмов, выбранные пользователем по его критериям
+        data = await state.get_data()
+        user_current_films = data.get("films")
+        # Выводим список фильмов и просим снова выбрать обзор какого смотреть
+        await callback.message.edit_text(text=user_current_films)
+        # Переводим в состояние выбора обзора фильма
+        await state.set_state(GeneralConditions.film_review)
+    elif trailer_data == "like":
+        # Получаем выбранный результат списка фильмов, выбранные пользователем по его критериям
+        data = await state.get_data()
+        user_choice = data.get("selected_film")
+        film_title = user_choice['title']
+        new_like = await async_add_like_to_film(film_title)
+        if new_like is not None:
+            await callback.message.answer(text=f"{LEXICON['like']}{new_like}\nНачните поиск заново",
+                                             reply_markup=main_builder)
+        else:
+            await callback.message.answer(text="❌ Фильм не найден")
+    elif trailer_data == "main_menu":
+        await callback.message.answer(text=LEXICON["/go"],reply_markup=main_builder)
+    await callback.answer()
