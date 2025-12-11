@@ -3,4 +3,5 @@ token.json
 movies.json
 .env
 .env.example
-.\__pycache__\
+.user_likes.json
+hendlers/__pycache__/hendlers_search

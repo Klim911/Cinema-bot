@@ -16,3 +16,5 @@ class GeneralConditions(StatesGroup):       # Общие состояния
     showing_results = State()       # Показ результатов
     film_review = State()           # Состояние ожидания выбора обзора фильма
     film_trailer = State()          # Состояние показа трейлера
+    sorted_rating_list_films = State()  # Состояние отсортированных фильмов по рейтингу
+    sorted_years_list_films = State()   # Состояние отсортированных фильмов по году

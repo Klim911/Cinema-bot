@@ -16,6 +16,11 @@ router = Router()
 # главного меню
 @router.message(CommandStart(), StateFilter(default_state))
 async def process_start_command(message: Message, state: FSMContext):
+    # Получаем ID пользователя
+    user_id = message.from_user.id
+    # Сохраняем ID пользователя в состояние
+    await state.update_data(user_id=user_id)
+    # Выводим сообщение
     await message.answer(text=LEXICON["/start"])
 
 
