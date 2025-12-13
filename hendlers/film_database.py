@@ -1,7 +1,8 @@
 import json
 import aiofiles
-import asyncio
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional
+
+from aiogram.fsm.context import FSMContext
 
 
 class FilmDatabase:
@@ -176,30 +177,11 @@ def sorting_selection_films_likes(data):
     return sorted_films
 
 
-# async def async_add_like_to_film(film_title: str, json_file_path: str = "movies.json"):
-#     # Чтение файла асинхронно
-#     async with aiofiles.open(json_file_path, 'r', encoding='utf-8') as f:
-#         content = await f.read()
-#         data = json.loads(content)
-#
-#     # Поиск и изменение
-#     for film in data["films"]:
-#         if film["title"].lower() == film_title.lower():
-#             film["likes"] = film.get("likes", 0) + 1
-#             new_likes = film["likes"]
-#             break
-#     else:
-#         return None
-#     # Запись обратно
-#     async with aiofiles.open(json_file_path, 'w', encoding='utf-8') as f:
-#         await f.write(json.dumps(data, ensure_ascii=False, indent=2))
-#     return new_likes
 async def async_add_like_to_film(
+        state: FSMContext,
         film_title: str,
-        user_id: str,  # Добавляем user_id для проверки
         json_file_path: str = "movies.json",
-        likes_file_path: str = "user_likes.json"  # Файл для хранения лайков пользователей
-) -> Optional[int]:
+):
     """
     Добавляет лайк фильму, если пользователь еще не лайкал его.
 
@@ -215,30 +197,27 @@ async def async_add_like_to_film(
     """
 
     # 1. Проверяем, лайкал ли пользователь уже этот фильм
-    try:
-        # Загружаем данные о лайках пользователей
-        async with aiofiles.open(likes_file_path, 'r', encoding='utf-8') as f:
-            content = await f.read()
-            user_likes = json.loads(content)
-    except FileNotFoundError:
-        # Если файла нет, создаем пустой словарь
-        user_likes = {}
-
+    data = await state.get_data()
+    list_favorites = data.get("favorites")
+    if list_favorites is None:
+        list_favorites = []
     # Проверяем, лайкал ли пользователь уже этот фильм
-    user_id_str = str(user_id)
     film_title_lower = film_title.lower()
 
-    if user_id_str in user_likes:
-        if film_title_lower in user_likes[user_id_str]:
-            # Пользователь уже лайкал этот фильм
+    for i in list_favorites:
+        if i.lower() == film_title_lower.lower():
             return None
 
-    # 2. Читаем данные о фильмах
+    # 2. Если пользователь не лайкал этот фильм, обновляем список в состоянии
+    list_favorites.append(film_title)
+    await state.update_data(favorites=list_favorites)
+
+    # 3. Читаем данные о фильмах
     async with aiofiles.open(json_file_path, 'r', encoding='utf-8') as f:
         content = await f.read()
         data = json.loads(content)
 
-    # 3. Ищем фильм и добавляем лайк
+    # 4. Ищем фильм и добавляем лайк
     film_found = False
     new_likes = 0
 
@@ -252,17 +231,8 @@ async def async_add_like_to_film(
     if not film_found:
         return None
 
-    # 4. Сохраняем обновленные данные фильмов
+    # 5. Сохраняем обновленные данные фильмов
     async with aiofiles.open(json_file_path, 'w', encoding='utf-8') as f:
         await f.write(json.dumps(data, ensure_ascii=False, indent=2))
-
-    # 5. Сохраняем информацию о лайке пользователя
-    if user_id_str not in user_likes:
-        user_likes[user_id_str] = []
-
-    user_likes[user_id_str].append(film_title_lower)
-
-    async with aiofiles.open(likes_file_path, 'w', encoding='utf-8') as f:
-        await f.write(json.dumps(user_likes, ensure_ascii=False, indent=2))
 
     return new_likes

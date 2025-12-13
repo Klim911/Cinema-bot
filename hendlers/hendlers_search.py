@@ -1,15 +1,12 @@
-from aiogram import F, Router, types
+from aiogram import F, Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup, default_state
-from aiogram.types import Message, ContentType, CallbackQuery
-from pyexpat.errors import messages
+from aiogram.types import Message, CallbackQuery
 
 from .states import GeneralConditions
-from lexicon.lexicon import LEXICON
 from keyboards.keyboards import *
 from .film_database import *
-# Создаем клавиатуру с кнопкой трейлера
+
 
 
 
@@ -142,6 +139,7 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
                                     "time": time_data
                                 })
 
+        # print(results)
         if results:
             kriter = (f"<b>Ваши критерии: </b>\n"
                           f"📅Год: {readable["year"]}\n"
@@ -187,6 +185,7 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
         films = user_data.get("current_films")
         list_films1 = sorting_selected_films_rating(films.copy())
         films_text = format_films_list(list_films1)
+        # print(type(films_text), films_text)
         # Выводим отсортированный список по рейтингу
         await callback.message.edit_text(text=films_text, reply_markup=sort_films)
         # Остаемся в том же состоянии
@@ -209,9 +208,6 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.showing_results)
     elif sort_data == "review_film":
-        # Берем сохраненные фильмы
-        films = user_data.get("current_films")
-        films_text = format_films_list(films)
         # Просим ввести номер по списку для трейлера
         await callback.message.answer(text=LEXICON["review"])
         # Устанавливаем состояние выбора номера обзора фильма
@@ -288,13 +284,13 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
         await callback.message.edit_text(text=user_current_films)
         # Переводим в состояние выбора обзора фильма
         await state.set_state(GeneralConditions.film_review)
+
     elif trailer_data == "like":
         # Получаем выбранный результат списка фильмов, выбранные пользователем по его критериям
         data = await state.get_data()
         user_choice = data.get("selected_film")
         film_title = user_choice['title']
-        user_id = str(callback.from_user.id)
-        new_like = await async_add_like_to_film(film_title=film_title, user_id=user_id)
+        new_like = await async_add_like_to_film(state=state, film_title=film_title)
         if new_like is not None:
             await callback.message.answer(
                 text=f"{LEXICON['like']}{new_like} лайков\nНачните поиск заново",

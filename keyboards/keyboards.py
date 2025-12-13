@@ -82,6 +82,7 @@ def get_trailer_keyboard(trailer_url: str | None = None) -> InlineKeyboardMarkup
         builder.button(text="🔙 Назад к списку", callback_data="back_list")
         builder.button(text="❤️ Поставить лайк", callback_data="like")
         builder.button(text="⚙️ Начать поиск заново", callback_data="main_menu")
+    builder.adjust(1)
     return builder.as_markup()
 
 # Клавиатура только с кнопкой "назад к списку"
