@@ -65,7 +65,7 @@ sort_rating = InlineKeyboardButton(text="Отсортировать по рей�
 sort_year = InlineKeyboardButton(text="Отсортировать по году 📅", callback_data="sorted_year")
 sort_like = InlineKeyboardButton(text="Отсортировать по лайкам 👍", callback_data="sorted_like")
 review = InlineKeyboardButton(text="Трейлер фильма 👀", callback_data="review_film")
-# # Создаем объект инлайн-клавиатуры связанный с сортировкой
+# Создаем объект инлайн-клавиатуры связанный с сортировкой
 sort_films = InlineKeyboardMarkup(inline_keyboard=[[sort_rating], [sort_year], [sort_like], [review]])
 
 # Создаем клавиатуру для просмотра трейлера
@@ -90,3 +90,11 @@ def get_back_to_list_keyboard() -> InlineKeyboardMarkup:
     back = InlineKeyboardButton(text="🔙 Назад к списку", callback_data="back_to_list")
     back_builder = InlineKeyboardMarkup(inline_keyboard=[[back]])
     return back_builder
+
+# Создаем инлайн кнопки для просмотра "Фильмы по рейтингу"
+top_back = InlineKeyboardButton(text="⬅️ Предыдущая страница", callback_data="back_page")
+top_continue = InlineKeyboardButton(text="Следующая страница ➡️", callback_data="continue_page")
+top_choice = InlineKeyboardButton(text="🎬 Выбрать фильм", callback_data="choice_page")
+main_menu = InlineKeyboardButton(text="📋 Вернуться в главное меню", callback_data="main_menu_page")
+# Создаем объект инлайн-клавиатуры связанной с "топом фильмов по рейтингу"
+top_ratings_films = InlineKeyboardMarkup(inline_keyboard=[[top_back], [top_choice], [top_continue], [main_menu]])

@@ -1,4 +1,4 @@
-from aiogram.fsm.state import State, StatesGroup, default_state
+from aiogram.fsm.state import State, StatesGroup
 
 
 class GeneralConditions(StatesGroup):       # Общие состояния
@@ -18,3 +18,6 @@ class GeneralConditions(StatesGroup):       # Общие состояния
     film_trailer = State()          # Состояние показа трейлера
     sorted_rating_list_films = State()  # Состояние отсортированных фильмов по рейтингу
     sorted_years_list_films = State()   # Состояние отсортированных фильмов по году
+    trailer_film = State()              # Состояние показа трейлера в фильмах по рейтингу, когда пользователь
+                                        # должен ввести номер фильма, для трейлера
+    top_trailer_film = State()          # Состояние фильма для показа трейлера

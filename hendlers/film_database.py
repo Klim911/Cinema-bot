@@ -201,7 +201,7 @@ async def async_add_like_to_film(
     list_favorites = data.get("favorites")
     if list_favorites is None:
         list_favorites = []
-    # Проверяем, лайкал ли пользователь уже этот фильм
+
     film_title_lower = film_title.lower()
 
     for i in list_favorites:

@@ -36,9 +36,6 @@ async def main():
     )
     dp = Dispatcher()
 
-    # Регистриуем роутеры в диспетчере
-    # dp.include_router(hendlers_main.router)
-    # dp.include_router(hendlers_search.router)
     for router in routers:
         dp.include_router(router)
 

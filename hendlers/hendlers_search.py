@@ -1,11 +1,11 @@
 from aiogram import F, Router
 from aiogram.filters import StateFilter
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from .states import GeneralConditions
 from keyboards.keyboards import *
 from .film_database import *
+from .films_service_top import *
 
 
 
@@ -26,7 +26,20 @@ async def handle_main_menu(message: Message, state: FSMContext):
         # Устанавливаем состояние выбора года
         await state.set_state(GeneralConditions.select_year)
     elif message.text == LEXICON["list_films"]:
-        pass
+        # # Устанавливаем состояние Фильмов по рейтингу
+        # await state.set_state(GeneralConditions.next_rating_list_films)
+        user = RatingsFilms("movies.json")
+        # Страница по умолчанию
+        page = 0
+        # Делаем и выводим первую страницу фильмов по рейтингу
+        f = user.get_current_page(page)  # Первая страница
+        if f:
+            # Сохраняем страницу по умолчанию
+            await state.update_data(str_page=page)
+        print_user = user.format_page(f)  # Вывод первой страницы
+        await message.answer(text=print_user, reply_markup=top_ratings_films)
+        # Устанавливаем состояние Фильмов по рейтингу
+        await state.set_state(GeneralConditions.sorted_rating_list_films)
     elif message.text == LEXICON["select_films"]:
         pass
 
@@ -239,7 +252,7 @@ async def process_film_number(message: Message, state: FSMContext):
                 f"🎬 {selected_film['title']}\n"
                 f"📅 Год: {selected_film['years']}\n"
                 f"⭐ Рейтинг: {selected_film['ratings']}/10\n"
-                f"⏱ Длительность: {selected_film['duration']} мин\n"
+                f"⏱️ Длительность: {selected_film['duration']} мин\n"
                 f"🎭 Жанры: {', '.join(selected_film['genres'])}\n"
                 f"────────────"
             )
