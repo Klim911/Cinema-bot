@@ -91,10 +91,19 @@ def get_back_to_list_keyboard() -> InlineKeyboardMarkup:
     back_builder = InlineKeyboardMarkup(inline_keyboard=[[back]])
     return back_builder
 
-# Создаем инлайн кнопки для просмотра "Фильмы по рейтингу"
+# Создаем инлайн кнопки для раздела "Фильмы по рейтингу"
 top_back = InlineKeyboardButton(text="⬅️ Предыдущая страница", callback_data="back_page")
 top_continue = InlineKeyboardButton(text="Следующая страница ➡️", callback_data="continue_page")
 top_choice = InlineKeyboardButton(text="🎬 Выбрать фильм", callback_data="choice_page")
 main_menu = InlineKeyboardButton(text="📋 Вернуться в главное меню", callback_data="main_menu_page")
 # Создаем объект инлайн-клавиатуры связанной с "топом фильмов по рейтингу"
 top_ratings_films = InlineKeyboardMarkup(inline_keyboard=[[top_back], [top_choice], [top_continue], [main_menu]])
+
+# Создаем инлайн кнопки для раздела "Случайный фильм из списка"
+random_next_film = InlineKeyboardButton(text="⏭️🎬 Следующий фильм", callback_data="next_film")
+random_like_film = InlineKeyboardButton(text="❤️ Поставить лайк", callback_data="random_like_film")
+random_trailer = InlineKeyboardButton(text="🎬 Посмотреть трейлер", callback_data="random_trailer_film")
+random_main = InlineKeyboardButton(text="📋 Вернуться в главное меню", callback_data="random_main_menu")
+# Создаем объект инлайн-клавиатуры "Случайный фильм"
+random_film = InlineKeyboardMarkup(inline_keyboard=[[random_next_film], [random_like_film],
+                                                    [random_trailer], [random_main]])

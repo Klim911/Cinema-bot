@@ -6,6 +6,7 @@ from .states import GeneralConditions
 from keyboards.keyboards import *
 from .film_database import *
 from .films_service_top import *
+from .film_random import *
 
 
 
@@ -26,8 +27,6 @@ async def handle_main_menu(message: Message, state: FSMContext):
         # Устанавливаем состояние выбора года
         await state.set_state(GeneralConditions.select_year)
     elif message.text == LEXICON["list_films"]:
-        # # Устанавливаем состояние Фильмов по рейтингу
-        # await state.set_state(GeneralConditions.next_rating_list_films)
         user = RatingsFilms("movies.json")
         # Страница по умолчанию
         page = 0
@@ -41,7 +40,16 @@ async def handle_main_menu(message: Message, state: FSMContext):
         # Устанавливаем состояние Фильмов по рейтингу
         await state.set_state(GeneralConditions.sorted_rating_list_films)
     elif message.text == LEXICON["select_films"]:
-        pass
+        user = RandomFilm("movies.json")
+        # Делаем и выводим рандомный фильма
+        film = user.random_film()               # Выбирается рандомный фильм
+        if film:
+            # Сохраняем фильм в состояние
+            await state.update_data(random_fim=film)
+        print_film = user.format_film(film)     # Красивый вывод фильма
+        await message.answer(text=print_film, reply_markup=random_film)
+        # Устанавливаем состояние Рандомного фильма
+        await state.set_state(GeneralConditions.random_film)
 
 
 # Этот хэндлер будет срабатывать если выбран один из годов и переводить в состояние выбора жанра

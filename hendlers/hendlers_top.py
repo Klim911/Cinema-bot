@@ -10,7 +10,7 @@ from .films_service_top import *
 router = Router()
 user = RatingsFilms("movies.json")
 
-# Обрабатываем хэндлер, первые кнопки списка фильмов по рейтингу
+# Обрабатываем хэндлер, кнопки списка фильмов по рейтингу
 @router.callback_query(GeneralConditions.sorted_rating_list_films)
 async def view_first_list(callback: CallbackQuery, state: FSMContext):    # Просмотр первого списка
     data = callback.data
