@@ -100,10 +100,18 @@ main_menu = InlineKeyboardButton(text="📋 Вернуться в главное
 top_ratings_films = InlineKeyboardMarkup(inline_keyboard=[[top_back], [top_choice], [top_continue], [main_menu]])
 
 # Создаем инлайн кнопки для раздела "Случайный фильм из списка"
-random_next_film = InlineKeyboardButton(text="⏭️🎬 Следующий фильм", callback_data="next_film")
-random_like_film = InlineKeyboardButton(text="❤️ Поставить лайк", callback_data="random_like_film")
-random_trailer = InlineKeyboardButton(text="🎬 Посмотреть трейлер", callback_data="random_trailer_film")
-random_main = InlineKeyboardButton(text="📋 Вернуться в главное меню", callback_data="random_main_menu")
-# Создаем объект инлайн-клавиатуры "Случайный фильм"
-random_film = InlineKeyboardMarkup(inline_keyboard=[[random_next_film], [random_like_film],
-                                                    [random_trailer], [random_main]])
+def get_trailer_random_film(trailer_url: str | None = None) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    if trailer_url:
+        # Если URL есть
+        builder.button(text="⏭️🎬 Следующий фильм", callback_data="next_film")
+        builder.button(text="❤️ Поставить лайк", callback_data="random_like_film")
+        builder.button(text="🎬 Посмотреть трейлер", url=trailer_url, callback_data="random_trailer_film")
+        builder.button(text="📋 Вернуться в главное меню", callback_data="random_main_menu")
+    else:
+        # Если трейлера нет
+        builder.button(text="⏭️🎬 Следующий фильм", callback_data="next_film")
+        builder.button(text="❤️ Поставить лайк", callback_data="random_like_film")
+        builder.button(text="📋 Вернуться в главное меню", callback_data="random_main_menu")
+    builder.adjust(1)
+    return builder.as_markup()

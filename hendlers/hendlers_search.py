@@ -46,8 +46,10 @@ async def handle_main_menu(message: Message, state: FSMContext):
         if film:
             # Сохраняем фильм в состояние
             await state.update_data(random_fim=film)
+        trailer_film = film['trailer_url']      # Берем ссылку трейлера для клавиатуры
         print_film = user.format_film(film)     # Красивый вывод фильма
-        await message.answer(text=print_film, reply_markup=random_film)
+        keyboard = get_trailer_random_film(trailer_film)
+        await message.answer(text=print_film, reply_markup=keyboard, parse_mode="HTML")
         # Устанавливаем состояние Рандомного фильма
         await state.set_state(GeneralConditions.random_film)
 

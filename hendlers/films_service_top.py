@@ -1,5 +1,6 @@
 import json
 import os
+import aiofiles
 
 from aiogram.fsm.context import FSMContext
 
@@ -14,6 +15,7 @@ class RatingsFilms:
         with open(full_path, 'r', encoding='utf-8') as f:
             self.data = json.load(f)
         self.films_rating_list = self.data["films"]
+        self.json_file_path = full_path
         self.sorted_films = []
         self.blocks = []
         self.block_size = 10
@@ -78,7 +80,7 @@ class RatingsFilms:
             return pr['trailer_url']
 
     async def add_like_to_film(self, sp, number, state: FSMContext):
-        """Добавляем лайк фильму, если пользователь ещё не лайкал его"""
+        """Добавляем лайк фильму"""
         # 1. Находим название фильма
         film = 0
         for i in sp:
@@ -117,6 +119,10 @@ class RatingsFilms:
 
         if not film_found:
             return None
+
+        # 5. Сохраняем обновленные данные фильмов
+        async with aiofiles.open(self.json_file_path, "w", encoding='utf-8') as fe:
+            await fe.write(json.dumps(self.data, ensure_ascii=False, indent=2))
 
         return new_likes
 
