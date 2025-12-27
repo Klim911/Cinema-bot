@@ -43,7 +43,7 @@ class RandomFilm:
 
         # 1. Достаем из состояния фильм
         data = await state.get_data()
-        film = data.get("random_fil")
+        film = data.get("random_film")
         film_title = film['title']          # название фильма
 
         # 2. Проверяем, лайкал ли пользователь уже этот фильм
@@ -59,11 +59,10 @@ class RandomFilm:
 
         # 3. Если пользователь не лайкал этот фильм, обновляем список в состоянии
         list_favorites.append(film_title)
+        print(list_favorites)
         await state.update_data(favorites=list_favorites)
-
-        # 4. Ищем фильм и добавляем лайк
-        film_found = False
-        new_likes = 0
+        list_favorites1 = data.get("favorites")
+        print(list_favorites1)
 
         # 4. Ищем фильм и добавляем лайк
         film_found = False

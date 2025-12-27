@@ -7,12 +7,13 @@ from lexicon.lexicon import LEXICON
 movie_search = KeyboardButton(text=LEXICON["movie_search"])
 list_films = KeyboardButton(text=LEXICON["list_films"])
 select_films = KeyboardButton(text=LEXICON["select_films"])
+favorites_films = KeyboardButton(text=LEXICON['favorit_films'])
 # Инициализируем билдер для клавиатуры главного меню
 m_builder = ReplyKeyboardBuilder()
 # Добавляем кнопки главного меню в билдер
 # m_builder.row(movie_search, list_films, select_films, width=3)
 # Создаем клавиатуру главного меню
-main_builder = ReplyKeyboardMarkup(keyboard=[[movie_search], [list_films], [select_films]],
+main_builder = ReplyKeyboardMarkup(keyboard=[[movie_search], [list_films], [select_films], [favorites_films]],
     resize_keyboard=True, one_time_keyboard=True)
 
 # ----------Создаем инлайн клавиатуры----------
@@ -91,7 +92,7 @@ def get_back_to_list_keyboard() -> InlineKeyboardMarkup:
     back_builder = InlineKeyboardMarkup(inline_keyboard=[[back]])
     return back_builder
 
-# Создаем инлайн кнопки для раздела "Фильмы по рейтингу"
+# Создаем инлайн клавиатуру для раздела "Фильмы по рейтингу"
 top_back = InlineKeyboardButton(text="⬅️ Предыдущая страница", callback_data="back_page")
 top_continue = InlineKeyboardButton(text="Следующая страница ➡️", callback_data="continue_page")
 top_choice = InlineKeyboardButton(text="🎬 Выбрать фильм", callback_data="choice_page")
@@ -113,5 +114,22 @@ def get_trailer_random_film(trailer_url: str | None = None) -> InlineKeyboardMar
         builder.button(text="⏭️🎬 Следующий фильм", callback_data="next_film")
         builder.button(text="❤️ Поставить лайк", callback_data="random_like_film")
         builder.button(text="📋 Вернуться в главное меню", callback_data="random_main_menu")
+    builder.adjust(1)
+    return builder.as_markup()
+
+# Создаем инлайн клавиатуру для раздела "Случайный фильм из избранного"
+def get_trailer_favorite_film(trailer_url: str | None = None) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    if trailer_url:
+        # Если есть ссылка на трейлер
+        builder.button(text="🎬 Посмотреть трейлер", url=trailer_url, callback_data="favorite_trailer_film")
+        builder.button(text="⏭️🎬 Следующий фильм", callback_data="favorite_next_film")
+        builder.button(text="💔 Убрать из списка избранного", callback_data="favorite_dislike_film")
+        builder.button(text="📋 Вернуться в главное меню", callback_data="favorite_main_menu")
+    else:
+        # Если трейлера нет
+        builder.button(text="⏭️🎬 Следующий фильм", callback_data="favorite_next_film")
+        builder.button(text="💔 Убрать из списка избранного", callback_data="favorite_dislike_film")
+        builder.button(text="📋 Вернуться в главное меню", callback_data="favorite_main_menu")
     builder.adjust(1)
     return builder.as_markup()

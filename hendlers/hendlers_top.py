@@ -136,3 +136,8 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
         # Указываем состояние "первого выбора"
         await state.set_state(GeneralConditions.first_choice)
     await callback.answer()
+
+# Обрабатываем непонятные сообщения пользователя в состоянии, когда пользователю будет представлен фильм
+@router.message(GeneralConditions.top_trailer_film)
+async def processing_messages(message: Message):
+    await message.answer(text=LEXICON['random_film'])

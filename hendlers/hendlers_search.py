@@ -7,6 +7,7 @@ from keyboards.keyboards import *
 from .film_database import *
 from .films_service_top import *
 from .film_random import *
+from .film_favorites_picker import FavoritesFilms
 
 
 
@@ -18,7 +19,8 @@ db = FilmDatabase("movies.json")
 # ожидания выбора года
 @router.message(F.text.in_([LEXICON["movie_search"],
                            LEXICON["list_films"],
-                           LEXICON["select_films"]]),
+                           LEXICON["select_films"],
+                            LEXICON["favorit_films"]]),
                                 StateFilter(GeneralConditions.first_choice))
 async def handle_main_menu(message: Message, state: FSMContext):
     if message.text == LEXICON["movie_search"]:     # Нажатие на кнопку поиск фильма
@@ -45,13 +47,32 @@ async def handle_main_menu(message: Message, state: FSMContext):
         film = user.random_film()               # Выбирается рандомный фильм
         if film:
             # Сохраняем фильм в состояние
-            await state.update_data(random_fim=film)
+            await state.update_data(random_film=film)
         trailer_film = film['trailer_url']      # Берем ссылку трейлера для клавиатуры
         print_film = user.format_film(film)     # Красивый вывод фильма
         keyboard = get_trailer_random_film(trailer_film)
         await message.answer(text=print_film, reply_markup=keyboard, parse_mode="HTML")
         # Устанавливаем состояние Рандомного фильма
         await state.set_state(GeneralConditions.random_film)
+    elif message.text == LEXICON["favorit_films"]:
+        # # Достаем из FSM наш список с избранными фильмами
+        # data = await state.get_data()
+        # films = data.get("favorites")
+        # if films is not None:
+            # Получаем случайный фильм из списка избранных фильмов
+        user = FavoritesFilms("movies.json")
+        film = await user.processing_film_favorites(state=state)    # Функция случайного выбора фильма из списка
+        if film is not None:
+            criteria_film = user.movie_favorites(film)              # Функция нахождения словаря фильма
+            trailer_film = criteria_film['trailer_url']             # Берем ссылку трейлера для клавиатуры
+            print_film = user.format_movie(criteria_film)           # Функция красивого вывода фильма
+            keyboard = get_trailer_favorite_film(trailer_film)      # Инлайн клавиатура
+            # Выводим случайный фильм и инлайн клавиатуру
+            await message.answer(text=print_film, reply_markup=keyboard, parse_mode="HTML")
+            # Устанавливаем состояние фильма из списка избранных фильмов
+            await state.set_state(GeneralConditions.favorite_film)
+        else:
+            await message.answer(text=LEXICON["random_favorites_film"])
 
 
 # Этот хэндлер будет срабатывать если выбран один из годов и переводить в состояние выбора жанра

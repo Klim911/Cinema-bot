@@ -19,7 +19,7 @@ async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
         # Получаем случайный фильм
         film  = user.random_film()
         # Сохраняем фильм в состояние FMS если нам надо будет его лайкать
-        await state.update_data(random_fil=film)
+        await state.update_data(random_film=film)
         trailer_url = film['trailer_url']               # Ссылка на трейлер
         keyboard = get_trailer_random_film(trailer_url)
         print_film = user.format_film(film)             # Красиво выводим
@@ -47,3 +47,8 @@ async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
         # Указываем состояние "первого выбора"
         await state.set_state(GeneralConditions.first_choice)
     await callback.answer()
+
+# Обрабатываем непонятные сообщения пользователя в состоянии рандомного фильма
+@router.message(GeneralConditions.random_film)
+async def processing_of_incomprehensible_messages(message: Message):
+    await message.answer(text=LEXICON['random_film'])

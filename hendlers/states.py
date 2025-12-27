@@ -22,3 +22,4 @@ class GeneralConditions(StatesGroup):       # Общие состояния
                                         # должен ввести номер фильма, для трейлера
     top_trailer_film = State()          # Состояние фильма для показа трейлера
     random_film = State()               # Состояние рандомного фильма
+    favorite_film = State()             # Состояние фильма из списка избранных фильмов
