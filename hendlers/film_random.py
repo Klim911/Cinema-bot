@@ -3,7 +3,6 @@ import os
 import random
 import aiofiles
 
-from aiogram.fsm.context import FSMContext
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -22,7 +21,6 @@ class RandomFilm:
     def random_film(self):
         """Функция выбора рандомного фильма"""
         film = random.choice(self.films_list)
-        trailer_url = film['trailer_url']
         return film
 
 
@@ -83,9 +81,3 @@ class RandomFilm:
             await fe.write(json.dumps(self.data, ensure_ascii=False, indent=2))
 
         return new_likes
-
-
-pr = RandomFilm("movies.json")
-res = pr.random_film()
-ser = pr.format_film(res)
-print(ser)

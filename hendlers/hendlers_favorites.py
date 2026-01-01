@@ -1,5 +1,4 @@
 from aiogram import Router
-from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
@@ -17,9 +16,6 @@ user = FavoritesFilms("movies.json")
 async def pick_favorite_movie(callback: CallbackQuery, state: FSMContext):
     data = callback.data
     if data == "favorite_next_film":
-        # Достаем из FSM наш список с избранными фильмами
-        data = await state.get_data()
-        films = data.get("favorites")
         # Получаем случайный фильм из списка избранных фильмов
         film = await user.processing_film_favorites(state=state)  # Функция случайного выбора фильма из списка
         criteria_film = user.movie_favorites(film)  # Функция нахождения словаря фильма

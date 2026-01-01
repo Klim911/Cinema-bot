@@ -87,8 +87,44 @@ class FilmDatabase:
         if max_duration:
             filtered_films = [film for film in filtered_films if film["duration"] <= max_duration]
 
+        # Добавляем нумерацию
+        for i, film in enumerate(filtered_films, start=1):
+            film["number"] = i
+
         return filtered_films
 
+    def format_movie(self, data):
+        """Красиво выводим фильм"""
+        text = ""
+        for film in data:
+            text += f"{film['number']}. 🎬 <b>{film['title']}</b>\n"
+            text += f"📅 Год: {film['years']}\n⭐️ Рейтинг: {film['ratings']}/10\n⏱️ Длительность: {film['duration']}\n"
+            text += f"🎭 Жанры: {', '.join(film['genres'])}\n\n"
+        return text
+
+    def sorting_selected_films_rating(self, data):
+        sorted_films = sorted(data, key=lambda film: (-film["ratings"]))
+        # Добавляем нумерацию
+        for i, film in enumerate(sorted_films, start=1):
+            film["number"] = i
+
+        return sorted_films
+
+    def sorting_selected_films_years(self, data):
+        sorted_films = sorted(data, key=lambda film: -int(film["years"]))
+        # Добавляем нумерацию
+        for i, film in enumerate(sorted_films, start=1):
+            film["number"] = i
+
+        return sorted_films
+
+    def sorting_selection_films_likes(self, data):
+        sorted_films = sorted(data, key=lambda film: (-film["likes"]))
+        # Добавляем нумерацию
+        for i, film in enumerate(sorted_films, start=1):
+            film["number"] = i
+
+        return sorted_films
 
 """
 Модуль для преобразования callback_data в читаемые названия
@@ -162,19 +198,6 @@ def format_films_list(films: list, limit: int = 10) -> str:
                     for i, film in enumerate(films[:limit])
                 ])
     return films_text
-
-
-def sorting_selected_films_rating(data):
-    sorted_films = sorted(data, key=lambda film: (-film["ratings"]))
-    return sorted_films
-
-def sorting_selected_films_years(data):
-    sorted_films = sorted(data, key=lambda film: -int(film["years"]))
-    return sorted_films
-
-def sorting_selection_films_likes(data):
-    sorted_films = sorted(data, key=lambda film: (-film["likes"]))
-    return sorted_films
 
 
 async def async_add_like_to_film(

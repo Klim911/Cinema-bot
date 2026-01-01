@@ -3,7 +3,7 @@ from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup, default_state
-from aiogram.types import Message, ContentType
+from aiogram.types import Message, ContentType, ReplyKeyboardRemove
 
 from lexicon.lexicon import LEXICON
 from .states import GeneralConditions
@@ -21,7 +21,7 @@ async def process_start_command(message: Message, state: FSMContext):
     # Сохраняем ID пользователя в состояние
     await state.update_data(user_id=user_id)
     # Выводим сообщение
-    await message.answer(text=LEXICON["/start"])
+    await message.answer(text=LEXICON["/start"], reply_markup=ReplyKeyboardRemove())
 
 
 """Обрабатываем команду help"""
@@ -29,7 +29,7 @@ async def process_start_command(message: Message, state: FSMContext):
 # что вы можете сейчас сделать
 @router.message(Command(commands="/help"), StateFilter(default_state))
 async def process_help_command(message: Message):
-    await message.answer(text=LEXICON["help"])
+    await message.answer(text=LEXICON["help"],  reply_markup=ReplyKeyboardRemove())
 
 
 # Этот хэндлер будет срабатывать на команду "go" и переводить бота в состояние первого выбора в главном меню,

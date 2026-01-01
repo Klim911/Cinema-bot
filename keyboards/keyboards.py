@@ -66,8 +66,9 @@ sort_rating = InlineKeyboardButton(text="Отсортировать по рей�
 sort_year = InlineKeyboardButton(text="Отсортировать по году 📅", callback_data="sorted_year")
 sort_like = InlineKeyboardButton(text="Отсортировать по лайкам 👍", callback_data="sorted_like")
 review = InlineKeyboardButton(text="Трейлер фильма 👀", callback_data="review_film")
+main_menu = InlineKeyboardButton(text="📋 Вернуться в главное меню", callback_data="sort_main_menu")
 # Создаем объект инлайн-клавиатуры связанный с сортировкой
-sort_films = InlineKeyboardMarkup(inline_keyboard=[[sort_rating], [sort_year], [sort_like], [review]])
+sort_films = InlineKeyboardMarkup(inline_keyboard=[[sort_rating], [sort_year], [sort_like], [review], [main_menu]])
 
 # Создаем клавиатуру для просмотра трейлера
 def get_trailer_keyboard(trailer_url: str | None = None) -> InlineKeyboardMarkup:

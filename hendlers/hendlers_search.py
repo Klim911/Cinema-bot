@@ -74,6 +74,11 @@ async def handle_main_menu(message: Message, state: FSMContext):
         else:
             await message.answer(text=LEXICON["random_favorites_film"])
 
+# Обрабатываем непонятные сообщения пользователя в состоянии ожидания первого выбора
+@router.message(StateFilter(GeneralConditions.first_choice))
+async def process_unknown_input_in_showing_state(message: Message):
+    await message.answer(text=LEXICON["main"], reply_markup=main_builder)
+
 
 # Этот хэндлер будет срабатывать если выбран один из годов и переводить в состояние выбора жанра
 @router.callback_query(StateFilter(GeneralConditions.select_year))
@@ -192,7 +197,8 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
                           f"Время: {readable["time"]}\n"
                           f"{separator}")
 
-            films_text = format_films_list(results)
+            films_text = db.format_movie(results)
+            # print(films_text)
             await callback.message.edit_text(
                 text=f"{kriter}\n<b>Список фильмов по вашим критериям: </b>\n{films_text}",
                 reply_markup=sort_films
@@ -227,28 +233,39 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
     if sort_data == "sorted_rating":
         # Берем сохраненные фильмы
         films = user_data.get("current_films")
-        list_films1 = sorting_selected_films_rating(films.copy())
-        films_text = format_films_list(list_films1)
-        # print(type(films_text), films_text)
+        list_films1 = db.sorting_selected_films_rating(films.copy()) # Сортируем по рейтингам
+        # Обновляем результат отсортированного списка фильмов, для дальнейшего поиска по номерам
+        await state.update_data(current_films=list_films1)
+        films_text = db.format_movie(list_films1) # Делаем красивый вывод
+        # Обновляем список фильмов
+        await state.update_data(films=films_text)
         # Выводим отсортированный список по рейтингу
-        await callback.message.edit_text(text=films_text, reply_markup=sort_films)
+        await callback.message.answer(text=films_text, reply_markup=sort_films)
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.showing_results)
     elif sort_data == "sorted_year":
         # Берем сохраненные фильмы
         films = user_data.get("current_films")
-        list_films2 = sorting_selected_films_years(films.copy())
-        films_text = format_films_list(list_films2)
+        list_films2 = db.sorting_selected_films_years(films.copy()) # Сортируем по годам
+        # Обновляем результат отсортированного списка фильмов, для дальнейшего поиска по номерам
+        await state.update_data(current_films=list_films2)
+        films_text = db.format_movie(list_films2) # Делаем красивый вывод
+        # Обновляем список фильмов
+        await state.update_data(films=films_text)
         # Выводим отсортированный список по году
-        await callback.message.edit_text(text=films_text, reply_markup=sort_films)
+        await callback.message.answer(text=films_text, reply_markup=sort_films)
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.showing_results)
     elif sort_data == "sorted_like":
         films = user_data.get("current_films")
-        list_films3 = sorting_selection_films_likes(films.copy())
-        films_text = format_films_list(list_films3)
+        list_films3 = db.sorting_selection_films_likes(films.copy()) # Сортируем по лайкам
+        # Обновляем результат отсортированного списка фильмов, для дальнейшего поиска по номерам
+        await state.update_data(current_films=list_films3)
+        films_text = db.format_movie(list_films3) # Делаем красивый вывод
+        # Обновляем список фильмов
+        await state.update_data(films=films_text)
         # Выводим отсортированный список по лайкам
-        await callback.message.edit_text(text=films_text, reply_markup=sort_films)
+        await callback.message.answer(text=films_text, reply_markup=sort_films)
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.showing_results)
     elif sort_data == "review_film":
@@ -256,6 +273,11 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(text=LEXICON["review"])
         # Устанавливаем состояние выбора номера обзора фильма
         await state.set_state(GeneralConditions.film_review)
+    elif sort_data == "sort_main_menu":
+        # Открываем кнопки главного меню и переводим в состояние первого выбора в главном меню
+        await callback.message.answer(text=LEXICON["/go"], reply_markup=main_builder)
+        # Указываем состояние "первого выбора"
+        await state.set_state(GeneralConditions.first_choice)
     await callback.answer()
 
 # Обрабатываем непонятные сообщения пользователя в состоянии показа результатов
@@ -325,9 +347,9 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
         data = await state.get_data()
         user_current_films = data.get("films")
         # Выводим список фильмов и просим снова выбрать обзор какого смотреть
-        await callback.message.edit_text(text=user_current_films)
-        # Переводим в состояние выбора обзора фильма
-        await state.set_state(GeneralConditions.film_review)
+        await callback.message.edit_text(text=user_current_films, reply_markup=sort_films)
+        # Переводим в состояние выбора из списка рекомендаций
+        await state.set_state(GeneralConditions.showing_results)
 
     elif trailer_data == "like":
         # Получаем выбранный результат списка фильмов, выбранные пользователем по его критериям

@@ -1,6 +1,7 @@
 from aiogram import Router
 from aiogram.filters import StateFilter
 from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
 
 from .states import GeneralConditions
 from keyboards.keyboards import *
@@ -32,12 +33,12 @@ async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
         new_like = await user.add_like_random_film(state=state)
         if new_like is not None:
             await callback.message.answer(
-                text=f"{LEXICON['like']}{new_like} лайков",
+                text=f"{LEXICON['like']}{new_like} лайков.\n\nВозвращаемся в главное меню",
                 reply_markup=main_builder
             )
         else:
             await callback.message.answer(
-                text=LEXICON["again_likes"],
+                text=f"{LEXICON["again_likes"]}\n\nВозвращаемся в главное меню",
                 reply_markup=main_builder
             )
 

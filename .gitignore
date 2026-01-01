@@ -1,7 +1,8 @@
 .idea
-token.json
 movies.json
 .env
 .env.example
 .user_likes.json
 hendlers/__pycache__/hendlers_search
+__pycache__/
+*.pyc
