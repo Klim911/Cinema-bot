@@ -1,6 +1,7 @@
 import random
 import os
 import json
+import aiofiles
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -14,6 +15,7 @@ class FavoritesFilms:
         with open(full_path, 'r', encoding='utf-8') as f:
             self.data = json.load(f)
         self.films_list = self.data["films"]
+        self.json_file_path = full_path
 
 
     async def processing_film_favorites(self, state):
@@ -35,6 +37,31 @@ class FavoritesFilms:
                 if d == data:
                     filme = i
                     return filme
+
+    async def dislike_film(self, state):
+        """Функция для удаления фильма из списка лайконых фильмов"""
+        # 1. Удаляем фильм из списка лайконых фильмов
+        # Достаем из FSM наш список с избранными фильмами
+        data = await state.get_data()
+        movie = data.get("the_last_movie")
+        # Достаем список лайконых фильмов
+        films = data.get("favorites")
+        # Удаляем название фильма из списка
+        if movie in films:
+            films.remove(movie)
+        # Сохраняем обновленный список лайканных фильмов
+        await state.update_data(favorites=films)
+
+        # 2. ищем фильм и удаляем лайк
+        for i in self.data["films"]:
+            if i["title"] == movie:
+                current_likes = i.get("likes", 0)
+                i["likes"] = current_likes - 1
+            break
+
+        # 3. Сохраняем обновленные данные фильмов
+        async with aiofiles.open(self.json_file_path, "w", encoding='utf-8') as fe:
+            await fe.write(json.dumps(self.data, ensure_ascii=False, indent=2))
 
 
     def format_movie(self, data):

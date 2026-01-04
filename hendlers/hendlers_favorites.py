@@ -19,6 +19,10 @@ async def pick_favorite_movie(callback: CallbackQuery, state: FSMContext):
         # Получаем случайный фильм из списка избранных фильмов
         film = await user.processing_film_favorites(state=state)  # Функция случайного выбора фильма из списка
         criteria_film = user.movie_favorites(film)  # Функция нахождения словаря фильма
+        # Сохраняем название последнего выданного фильма из списка лайков
+        title_film = criteria_film['title']         # Берем название фильма (это надо для удаления из списка лайконых
+                                                    # фильмов, если пользователь нажмет клавишу убрать лайк)
+        await state.update_data(the_last_movie=title_film)
         trailer_film = criteria_film['trailer_url']  # Берем ссылку трейлера для клавиатуры
         print_film = user.format_movie(criteria_film)  # Функция красивого вывода фильма
         keyboard = get_trailer_favorite_film(trailer_film)  # Инлайн клавиатура
@@ -28,7 +32,12 @@ async def pick_favorite_movie(callback: CallbackQuery, state: FSMContext):
         await state.set_state(GeneralConditions.favorite_film)
 
     elif data == "favorite_dislike_film":
-        pass
+        await user.dislike_film(state=state) # Функция удаления фильма из списка избранных фильмов
+        # Выводим сообщение о том, что у фильма убран лайк и отправляем пользователя в главное меню
+        await callback.message.answer(text=LEXICON['dislike'], reply_markup=main_builder)
+        # Переходим в состояние главного меню
+        await state.set_state(GeneralConditions.first_choice)
+
 
     elif data == "favorite_main_menu":
         # Открываем кнопки главного меню и переводим в состояние первого выбора в главном меню

@@ -6,6 +6,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from config.config import Config, load_config
 from environs import Env
+from aiogram.fsm.storage.redis import RedisStorage
+from redis.asyncio import Redis
 from hendlers import routers
 
 
@@ -15,6 +17,12 @@ env.read_env()  # Методом read_env() читаем файл .env и заг
 logger = logging.getLogger(__name__)
 
 Token = env("BOT_TOKEN")
+
+# Инициализируем Redis
+redis = Redis(host='localhost')
+
+# Инициализируем хранилище
+storage = RedisStorage(redis=redis)
 
 # Функция конфигурирования и запуска бота
 async def main():
@@ -34,7 +42,7 @@ async def main():
         token=config.bot.token,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
-    dp = Dispatcher()
+    dp = Dispatcher(storage=storage)
 
     for router in routers:
         dp.include_router(router)
