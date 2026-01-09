@@ -166,7 +166,7 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
         separator = "<code>────────────────────────────────</code>"
 
         # Получаем читаемые названия
-        readable = get_readable_criteria(
+        readable = db.conversion_to_readable_names(
             year_callback=user_choices.get("year"),
             genre_callback=user_choices.get("genre"),
             rating_callback=user_choices.get("rating"),
@@ -356,7 +356,7 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
         data = await state.get_data()
         user_choice = data.get("selected_film")
         film_title = user_choice['title']
-        new_like = await async_add_like_to_film(state=state, film_title=film_title)
+        new_like = await db.async_add_like_to_film(state=state, film_title=film_title)
         if new_like is not None:
             await callback.message.answer(
                 text=f"{LEXICON['like']}{new_like} лайков\nНачните поиск заново",

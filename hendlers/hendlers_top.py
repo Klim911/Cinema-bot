@@ -83,7 +83,7 @@ async def process_film_number(message: Message, state: FSMContext):
         if film_number in numbers:
             # Сохраняем номер выбранного фильма
             await state.update_data(film_number=film_number)
-            result = user.b(films, film_number)             # Красивый вывод текста выбранного фильма
+            result = user.beautiful_format_movie(films, film_number)             # Красивый вывод текста выбранного фильма
             keyboard = get_trailer_keyboard(user.trailer(films, film_number)) # Делаем переход на трейлер
             # Выводим описание фильма, и инлайн клавиатуру
             await message.answer(text=result, reply_markup=keyboard, parse_mode="HTML")

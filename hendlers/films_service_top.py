@@ -4,18 +4,19 @@ import aiofiles
 
 from aiogram.fsm.context import FSMContext
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-file_path = os.path.join(parent_dir, 'movies.json')
-
 class RatingsFilms:
 
     def __init__(self, json_file):
-        full_path = json_file if os.path.isabs(json_file) else os.path.join(parent_dir, json_file)
-        with open(full_path, 'r', encoding='utf-8') as f:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.parent_dir = os.path.dirname(current_dir)
+        if os.path.isabs(json_file):
+            self.json_file_path = json_file
+        else:
+            self.json_file_path = os.path.join(self.parent_dir, json_file)
+        # Загружаем базу фильмов из JSON файла
+        with open(self.json_file_path, 'r', encoding='utf-8') as f:
             self.data = json.load(f)
         self.films_rating_list = self.data["films"]
-        self.json_file_path = full_path
         self.sorted_films = []
         self.blocks = []
         self.block_size = 10
@@ -43,7 +44,8 @@ class RatingsFilms:
         else:
             return False
 
-    def number_on_the_list(self, sp):
+    @staticmethod
+    def number_on_the_list(sp):
         """Делаем список с номерами, для проверки правильного номера"""
         final = []
         for i in sp:
@@ -52,7 +54,8 @@ class RatingsFilms:
                     final.append(d)
         return final
 
-    def b(self, sp: list, number):
+    @staticmethod
+    def beautiful_format_movie(sp: list, number):
         """Красивый вывод фильма выбранный пользователем"""
         dano = 0
         for i in sp:
@@ -69,7 +72,8 @@ class RatingsFilms:
             response_text = f"{text}\n\n😔 <b>К сожалению, трейлер для этого фильма не найден</b>"
             return response_text
 
-    def trailer(self, sp: list, number):
+    @staticmethod
+    def trailer(sp: list, number):
         """Достаем ссылку на трейлер"""
         pr = 0
         for i in sp:
@@ -126,7 +130,8 @@ class RatingsFilms:
 
         return new_likes
 
-    def format_page(self, films):
+    @staticmethod
+    def format_page(films):
         """Делаем красивый вывод для пользователя"""
         text = ""
         for film in films:

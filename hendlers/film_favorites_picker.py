@@ -3,22 +3,23 @@ import os
 import json
 import aiofiles
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-file_path = os.path.join(parent_dir, 'movies.json')
-
 
 class FavoritesFilms:
+
     def __init__(self, json_file):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.parent_dir = os.path.dirname(current_dir)
+        if os.path.isabs(json_file):
+            self.json_file_path = json_file
+        else:
+            self.json_file_path = os.path.join(self.parent_dir, json_file)
         # Загружаем базу фильмов из JSON файла
-        full_path = json_file if os.path.isabs(json_file) else os.path.join(parent_dir, json_file)
-        with open(full_path, 'r', encoding='utf-8') as f:
+        with open(self.json_file_path, 'r', encoding='utf-8') as f:
             self.data = json.load(f)
         self.films_list = self.data["films"]
-        self.json_file_path = full_path
 
-
-    async def processing_film_favorites(self, state):
+    @staticmethod
+    async def processing_film_favorites(state):
         """Функция, которая достает случайный фильм из списка избранных"""
         # Достаем из FSM наш список с избранными фильмами
         data = await state.get_data()
@@ -31,7 +32,6 @@ class FavoritesFilms:
 
     def movie_favorites(self, data):
         """Находим наш случайный фильм в нашем общем списке, и достаем словарь"""
-        filme = None
         for i in self.films_list:
             for j, d in i.items():
                 if d == data:
@@ -39,17 +39,17 @@ class FavoritesFilms:
                     return filme
 
     async def dislike_film(self, state):
-        """Функция для удаления фильма из списка лайконых фильмов"""
-        # 1. Удаляем фильм из списка лайконых фильмов
-        # Достаем из FSM наш список с избранными фильмами
+        """Функция для удаления фильма из списка лайкнутых фильмов"""
+        # 1. Удаляем фильм из списка лайкнутых фильмов
+        # Достаем, из FSM наш список с избранными фильмами
         data = await state.get_data()
         movie = data.get("the_last_movie")
-        # Достаем список лайконых фильмов
+        # Достаем список лайкнутых фильмов
         films = data.get("favorites")
         # Удаляем название фильма из списка
         if movie in films:
             films.remove(movie)
-        # Сохраняем обновленный список лайканных фильмов
+        # Сохраняем обновленный список лайкнутых фильмов
         await state.update_data(favorites=films)
 
         # 2. ищем фильм и удаляем лайк
@@ -63,8 +63,8 @@ class FavoritesFilms:
         async with aiofiles.open(self.json_file_path, "w", encoding='utf-8') as fe:
             await fe.write(json.dumps(self.data, ensure_ascii=False, indent=2))
 
-
-    def format_movie(self, data):
+    @staticmethod
+    def format_movie(data):
         """Красиво выводим фильм"""
         text = (f"🎬 <b>{data['title']}</b>\n📅 Год: {data['years']}\n⭐ Рейтинг: {data['ratings']}\n"
                 f"⏱️ Длительность: {data['duration']}\n🎭 Жанры: {', '.join(data['genres'])}\n────────────")

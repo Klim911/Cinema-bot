@@ -4,28 +4,27 @@ import random
 import aiofiles
 
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-file_path = os.path.join(parent_dir, 'movies.json')
-
 class RandomFilm:
 
     def __init__(self, json_file):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.parent_dir = os.path.dirname(current_dir)
+        if os.path.isabs(json_file):
+            self.json_file_path = json_file
+        else:
+            self.json_file_path = os.path.join(self.parent_dir, json_file)
         # Загружаем базу фильмов из JSON файла
-        full_path = json_file if os.path.isabs(json_file) else os.path.join(parent_dir, json_file)
-        with open(full_path, 'r', encoding='utf-8') as f:
+        with open(self.json_file_path, 'r', encoding='utf-8') as f:
             self.data = json.load(f)
         self.films_list = self.data["films"]
-        self.json_file_path = full_path
 
     def random_film(self):
-        """Функция выбора рандомного фильма"""
+        """Функция выбора случайного фильма"""
         film = random.choice(self.films_list)
         return film
 
-
-
-    def format_film(self, film):
+    @staticmethod
+    def format_film(film):
         """Красивый вывод фильма для пользователя"""
         text = (f"🎬 <b>{film['title']}</b>\n📅 Год: {film['years']}\n⭐ Рейтинг: {film['ratings']}\n"
                 f"⏱️ Длительность: {film['duration']}\n🎭 Жанры: {', '.join(film['genres'])}\n────────────")

@@ -1,5 +1,4 @@
 from aiogram import Router
-from aiogram.filters import StateFilter
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
@@ -12,7 +11,7 @@ from .film_random import *
 router = Router()
 user = RandomFilm("movies.json")
 
-# Обрабатываем хэндлер рандомного фильма
+# Обрабатываем хэндлер случайного фильма
 @router.callback_query(GeneralConditions.random_film)
 async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
     data = callback.data
@@ -49,7 +48,7 @@ async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
         await state.set_state(GeneralConditions.first_choice)
     await callback.answer()
 
-# Обрабатываем непонятные сообщения пользователя в состоянии рандомного фильма
+# Обрабатываем непонятные сообщения пользователя в состоянии случайного фильма
 @router.message(GeneralConditions.random_film)
 async def processing_of_incomprehensible_messages(message: Message):
     await message.answer(text=LEXICON['random_film'])
