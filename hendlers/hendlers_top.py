@@ -3,12 +3,13 @@ from aiogram.filters import StateFilter
 from aiogram.types import Message, CallbackQuery
 
 from .states import GeneralConditions
+from config.config import MOVIES_JSON
 from keyboards.keyboards import *
-from .films_service_top import *
+from classes.films_service_top import *
 
 
 router = Router()
-user = RatingsFilms("movies.json")
+user = RatingsFilms(MOVIES_JSON)
 
 # Обрабатываем хэндлер, кнопки списка фильмов по рейтингу
 @router.callback_query(GeneralConditions.sorted_rating_list_films)
@@ -27,7 +28,7 @@ async def view_first_list(callback: CallbackQuery, state: FSMContext):    # Пр
         else:
             await callback.message.answer(text=LEXICON["continue_ratings_list"])
         page_print = user.format_page(films)    # Выводим страницу
-        # Выводим список фильмов и инлайн клавиатуры
+        # Выводим список фильмов и inline-клавиатуры
         await callback.message.edit_text(text=page_print, reply_markup=top_ratings_films)
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.sorted_rating_list_films)
@@ -49,7 +50,7 @@ async def view_first_list(callback: CallbackQuery, state: FSMContext):    # Пр
         else:
             await callback.message.answer(text=LEXICON["back_ratings_list"])
         page_print = user.format_page(films)  # Выводим страницу
-        # Выводим список фильмов и инлайн клавиатуры
+        # Выводим список фильмов и inline-клавиатуры
         await callback.message.edit_text(text=page_print, reply_markup=top_ratings_films)
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.sorted_rating_list_films)

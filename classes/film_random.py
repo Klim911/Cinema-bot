@@ -1,18 +1,17 @@
 import json
-import os
+from pathlib import Path
 import random
 import aiofiles
 
+from config.config import MOVIES_JSON
 
 class RandomFilm:
 
-    def __init__(self, json_file):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.parent_dir = os.path.dirname(current_dir)
-        if os.path.isabs(json_file):
-            self.json_file_path = json_file
+    def __init__(self, json_file = None):
+        if json_file is None:
+            self.json_file_path = MOVIES_JSON
         else:
-            self.json_file_path = os.path.join(self.parent_dir, json_file)
+            self.json_file_path = Path(json_file) if isinstance(json_file, str) else json_file
         # Загружаем базу фильмов из JSON файла
         with open(self.json_file_path, 'r', encoding='utf-8') as f:
             self.data = json.load(f)
@@ -56,10 +55,7 @@ class RandomFilm:
 
         # 3. Если пользователь не лайкал этот фильм, обновляем список в состоянии
         list_favorites.append(film_title)
-        print(list_favorites)
         await state.update_data(favorites=list_favorites)
-        list_favorites1 = data.get("favorites")
-        print(list_favorites1)
 
         # 4. Ищем фильм и добавляем лайк
         film_found = False

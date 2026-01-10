@@ -1,14 +1,19 @@
 import json
 import aiofiles
 from typing import List, Dict, Optional
-
+from pathlib import Path
+from config.config import MOVIES_JSON
 
 
 class FilmDatabase:
     """База данных фильмов"""
-    def __init__(self, json_file: str = "movies.json"):
+    def __init__(self, json_file = None):
+        if json_file is None:
+            self.json_file_path = MOVIES_JSON
+        else:
+            self.json_file_path = Path(json_file) if isinstance(json_file, str) else json_file
         # Загружаем базу фильмов из JSON файла
-        with open(json_file, "r", encoding="utf-8") as f:
+        with open(self.json_file_path, "r", encoding="utf-8") as f:
             self.data = json.load(f)
         self.films_list = self.data["films"]
 
@@ -191,8 +196,8 @@ class FilmDatabase:
             "time": time_mapping.get(time_callback, "Любая длительность") if time_callback else "Любая длительность"
         }
 
-    @staticmethod
-    async def async_add_like_to_film(state,
+    async def async_add_like_to_film(self,
+            state,
             film_title: str,
             json_file_path: str = "movies.json",
     ):
@@ -233,7 +238,7 @@ class FilmDatabase:
             return None
 
         # 5. Сохраняем обновленные данные фильмов
-        async with aiofiles.open(json_file_path, 'w', encoding='utf-8') as f:
+        async with aiofiles.open(self.json_file_path, 'w', encoding='utf-8') as f:
             await f.write(json.dumps(data, ensure_ascii=False, indent=2))
 
         return new_likes

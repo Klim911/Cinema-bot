@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from environs import Env
+from pathlib import Path
 
+BASE_DIR = Path(__file__).parent.parent
+MOVIES_JSON = BASE_DIR / "movies.json"
 
 @dataclass
 class TgBot:

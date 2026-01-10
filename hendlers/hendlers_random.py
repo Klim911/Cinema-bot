@@ -4,12 +4,13 @@ from aiogram.fsm.context import FSMContext
 
 from .states import GeneralConditions
 from keyboards.keyboards import *
-from .film_random import *
+from config.config import MOVIES_JSON
+from classes.film_random import RandomFilm
 
 
 
 router = Router()
-user = RandomFilm("movies.json")
+user = RandomFilm(MOVIES_JSON)
 
 # Обрабатываем хэндлер случайного фильма
 @router.callback_query(GeneralConditions.random_film)
@@ -20,9 +21,11 @@ async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
         film  = user.random_film()
         # Сохраняем фильм в состояние FMS если нам надо будет его лайкать
         await state.update_data(random_film=film)
-        trailer_url = film['trailer_url']               # Ссылка на трейлер
+        # Ссылка на трейлер
+        trailer_url = film['trailer_url']
         keyboard = get_trailer_random_film(trailer_url)
-        print_film = user.format_film(film)             # Красиво выводим
+        # Красиво выводим
+        print_film = user.format_film(film)
         # Выводим фильм и остаемся в том же состоянии
         await callback.message.edit_text(text=print_film, reply_markup=keyboard, parse_mode="HTML")
         await state.set_state(GeneralConditions.random_film)
@@ -35,11 +38,13 @@ async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
                 text=f"{LEXICON['like']}{new_like} лайков.\n\nВозвращаемся в главное меню",
                 reply_markup=main_builder
             )
+            await state.set_state(GeneralConditions.first_choice)
         else:
             await callback.message.answer(
                 text=f"{LEXICON["again_likes"]}\n\nВозвращаемся в главное меню",
                 reply_markup=main_builder
             )
+            await state.set_state(GeneralConditions.first_choice)
 
     elif data == "random_main_menu":
         # Открываем кнопки главного меню и переводим в состояние первого выбора в главном меню
