@@ -5,9 +5,10 @@ import aiofiles
 
 from config.config import MOVIES_JSON
 
+
 class RandomFilm:
 
-    def __init__(self, json_file = None):
+    def __init__(self, json_file=None):
         if json_file is None:
             self.json_file_path = MOVIES_JSON
         else:

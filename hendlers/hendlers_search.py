@@ -301,11 +301,13 @@ async def process_unknown_input_in_showing_state(message: Message):
     await message.answer(text=LEXICON["no_show"], reply_markup=sort_films)  #?
 
 # Этот хэндлер будет срабатывать, когда пользователь введет номер фильма, чтобы посмотреть его трейлер.
-@router.message(StateFilter(GeneralConditions.film_review))
+@router.message(StateFilter(GeneralConditions.film_review),
+                F.text,
+                lambda message: message.text.isdigit())
 async def process_film_number(message: Message, state: FSMContext):
-    try:
-        # Пробуем преобразовать текст в число
-        film_number = int(message.text.strip())
+    # Пробуем преобразовать текст в число
+    film_number = int(message.text.strip())
+    if isinstance(film_number, int):
         # Получаем сохраненные фильмы из состояния
         user_data = await state.get_data()
         films = user_data.get("current_films", [])
@@ -346,11 +348,14 @@ async def process_film_number(message: Message, state: FSMContext):
             # Номер вне диапазона
             await message.answer(text=f"❌ Номер должен быть от 1 до {len(films)}.\n"
                      f"Пожалуйста, введите номер фильма из списка:")
+    else:
+        await message.answer(text=LEXICON['no_number'])
 
-    except ValueError:
-        # Пользователь ввел не число
-        await message.answer(text="❌ Пожалуйста, введите номер фильма (только цифру).\n"
-                 f"Например: 1, 2, 3 и т.д.")
+# Обрабатываем непонятные сообщения пользователя
+@router.message(StateFilter(GeneralConditions.film_review))
+async def process_unknown_input_in_film_review(message: Message, state: FSMContext):
+    await message.answer(text=LEXICON['no_number'])
+    await state.set_state(GeneralConditions.film_review)
 
 # Этот хэндлер будет срабатывать, когда пользователь нажмет на просмотр трейлера, обработаем нажатие на лайк и назад,
 # а также возможность начать новый поиск
@@ -394,5 +399,5 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
 
 # Обрабатываем непонятные сообщения пользователя в состоянии показа результатов
 @router.message(StateFilter(GeneralConditions.film_trailer))
-async def process_unknown_input_in_showing_state(message: Message):
+async def process_unknown_input_in_showing(message: Message):
     await message.answer(text=LEXICON["please"])

@@ -1,9 +1,8 @@
-from aiogram import F, Router, types
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup, default_state
-from aiogram.types import Message, ContentType, ReplyKeyboardRemove
+from aiogram.fsm.state import default_state
+from aiogram.types import Message, ReplyKeyboardRemove
 
 from lexicon.lexicon import LEXICON
 from .states import GeneralConditions
@@ -11,7 +10,8 @@ from keyboards.keyboards import *
 
 
 router = Router()
-"""Обрабатываем команду start"""
+
+
 # Этот хэндлер будет срабатывать на команду /start вне состояний и предлагать сделать выбор нажатия одной из кнопок
 # главного меню
 @router.message(CommandStart())

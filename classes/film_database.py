@@ -7,7 +7,7 @@ from config.config import MOVIES_JSON
 
 class FilmDatabase:
     """База данных фильмов"""
-    def __init__(self, json_file = None):
+    def __init__(self, json_file=None):
         if json_file is None:
             self.json_file_path = MOVIES_JSON
         else:
@@ -25,7 +25,7 @@ class FilmDatabase:
             "years_2000": [2000, 2009],
             "years_2010": [2010, 2019],
             "years_2020": [2020, 2025],
-            "year_pass": None           #Пропуск - любой год
+            "year_pass": None           # Пропуск - любой год
         }
         return renge_of_years.get(year_data) if year_data else None
 
@@ -143,7 +143,7 @@ class FilmDatabase:
         genre_callback: str = None,
         rating_callback: str = None,
         time_callback: str = None
-    ) -> dict:
+                                    ) -> dict:
 
         # Маппинг годов
         year_mapping = {
@@ -200,7 +200,7 @@ class FilmDatabase:
             state,
             film_title: str,
             json_file_path: str = "movies.json",
-    ):
+            ):
 
         # 1. Проверяем, лайкал ли пользователь уже этот фильм
         data = await state.get_data()

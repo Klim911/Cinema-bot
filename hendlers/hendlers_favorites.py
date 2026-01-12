@@ -2,6 +2,7 @@ from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
+
 from .states import GeneralConditions
 from keyboards.keyboards import *
 from config.config import MOVIES_JSON
@@ -10,6 +11,7 @@ from classes.film_favorites_picker import FavoritesFilms
 
 router = Router()
 user = FavoritesFilms(MOVIES_JSON)
+
 
 # Обрабатываем хэндлер случайного фильма из списка
 @router.callback_query(GeneralConditions.favorite_film)
@@ -45,13 +47,13 @@ async def pick_favorite_movie(callback: CallbackQuery, state: FSMContext):
         # Переходим в состояние главного меню
         await state.set_state(GeneralConditions.first_choice)
 
-
     elif data == "favorite_main_menu":
         # Открываем кнопки главного меню и переводим в состояние первого выбора в главном меню
         await callback.message.answer(text=LEXICON["/go"], reply_markup=main_builder)
         # Указываем состояние "первого выбора"
         await state.set_state(GeneralConditions.first_choice)
     await callback.answer()
+
 
 # Обрабатываем непонятные сообщения пользователя в состоянии случайного фильма из списка избранного
 @router.message(GeneralConditions.random_film)

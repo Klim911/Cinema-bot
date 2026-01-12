@@ -5,6 +5,7 @@ import aiofiles
 from aiogram.fsm.context import FSMContext
 from config.config import MOVIES_JSON
 
+
 class RatingsFilms:
 
     def __init__(self, json_file):
