@@ -1,11 +1,17 @@
 from aiogram import Router
 from aiogram.filters import StateFilter
 from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
 
 from .states import GeneralConditions
 from config.config import MOVIES_JSON
-from keyboards.keyboards import *
-from classes.films_service_top import *
+from keyboards.keyboards import (
+top_ratings_films,
+main_builder,
+get_trailer_keyboard
+)
+from classes.films_service_top import RatingsFilms
+from lexicon.lexicon import LEXICON
 
 
 router = Router()

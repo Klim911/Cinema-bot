@@ -1,13 +1,15 @@
 from aiogram import F, Router
 from aiogram.filters import StateFilter
 from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
 
 from .states import GeneralConditions
-from keyboards.keyboards import *
+import keyboards.keyboards as kb
+from lexicon.lexicon import LEXICON
 from config.config import MOVIES_JSON
-from classes.film_database import *
-from classes.films_service_top import *
-from classes.film_random import *
+from classes.film_database import FilmDatabase
+from classes.films_service_top import RatingsFilms
+from classes.film_random import RandomFilm
 from classes.film_favorites_picker import FavoritesFilms
 
 
@@ -16,7 +18,7 @@ from classes.film_favorites_picker import FavoritesFilms
 router = Router()
 db = FilmDatabase(MOVIES_JSON)
 
-# Этот хэендлер будет срабатывать, если нажата кнопка "Поиск фильма" и переводить в состояние
+# Этот хэндлер будет срабатывать, если нажата кнопка "Поиск фильма" и переводить в состояние
 # ожидания выбора года
 @router.message(F.text.in_([LEXICON["movie_search"],
                            LEXICON["list_films"],
@@ -26,8 +28,8 @@ db = FilmDatabase(MOVIES_JSON)
 async def handle_main_menu(message: Message, state: FSMContext):
     # Нажатие на кнопку поиск фильма
     if message.text == LEXICON["movie_search"]:
-        # Выводим сообщение выбора года и инлайн клавиатуру
-        await message.answer(text=LEXICON["year"], reply_markup=years_films)
+        # Выводим сообщение выбора года и inline-клавиатуру
+        await message.answer(text=LEXICON["year"], reply_markup=kb.years_films)
         # Устанавливаем состояние выбора года
         await state.set_state(GeneralConditions.select_year)
     elif message.text == LEXICON["list_films"]:
@@ -42,7 +44,7 @@ async def handle_main_menu(message: Message, state: FSMContext):
             await state.update_data(str_page=page)
         # Вывод первой страницы
         print_user = user.format_page(f)
-        await message.answer(text=print_user, reply_markup=top_ratings_films)
+        await message.answer(text=print_user, reply_markup=kb.top_ratings_films)
         # Устанавливаем состояние Фильмов по рейтингу
         await state.set_state(GeneralConditions.sorted_rating_list_films)
     elif message.text == LEXICON["select_films"]:
@@ -57,9 +59,9 @@ async def handle_main_menu(message: Message, state: FSMContext):
         trailer_film = film['trailer_url']
         # Красивый вывод фильма
         print_film = user.format_film(film)
-        keyboard = get_trailer_random_film(trailer_film)
+        keyboard = kb.get_trailer_random_film(trailer_film)
         await message.answer(text=print_film, reply_markup=keyboard, parse_mode="HTML")
-        # Устанавливаем состояние Рандомного фильма
+        # Устанавливаем состояние случайного фильма
         await state.set_state(GeneralConditions.random_film)
     elif message.text == LEXICON["favorit_films"]:
         # Получаем случайный фильм из списка избранных фильмов
@@ -73,9 +75,9 @@ async def handle_main_menu(message: Message, state: FSMContext):
             trailer_film = criteria_film['trailer_url']
             # Функция красивого вывода фильма
             print_film = user.format_movie(criteria_film)
-            # Инлайн клавиатура
-            keyboard = get_trailer_favorite_film(trailer_film)
-            # Выводим случайный фильм и инлайн клавиатуру
+            # Inline-клавиатура
+            keyboard = kb.get_trailer_favorite_film(trailer_film)
+            # Выводим случайный фильм и inline-клавиатуру
             await message.answer(text=print_film, reply_markup=keyboard, parse_mode="HTML")
             # Устанавливаем состояние фильма из списка избранных фильмов
             await state.set_state(GeneralConditions.favorite_film)
@@ -85,7 +87,7 @@ async def handle_main_menu(message: Message, state: FSMContext):
 # Обрабатываем непонятные сообщения пользователя в состоянии ожидания первого выбора
 @router.message(StateFilter(GeneralConditions.first_choice))
 async def process_unknown_input_in_showing_state(message: Message):
-    await message.answer(text=LEXICON["main"], reply_markup=main_builder)
+    await message.answer(text=LEXICON["please"])
 
 
 # Этот хэндлер будет срабатывать если выбран один из годов и переводить в состояние выбора жанра
@@ -97,21 +99,21 @@ async def process_select_genre_command(callback: CallbackQuery, state: FSMContex
         # Сохраняем выбранный год
         await state.update_data(year=year_data)
         # Переходим к следующему шагу - выбор жанра
-        await callback.message.edit_text(text=LEXICON["genre"], reply_markup=genre_films)
+        await callback.message.edit_text(text=LEXICON["genre"], reply_markup=kb.genre_films)
         # Устанавливаем состояние выбора жанра
         await state.set_state(GeneralConditions.select_genre)
     elif year_data == "year_back":
         # Устанавливаем состояние главного меню и появление кнопок главного меню
-        # Удаляем инлайн клавиатуру
+        # Удаляем, inline-клавиатуру
         await callback.message.delete()
-        await callback.message.answer(text=LEXICON["/go"], reply_markup=main_builder)
+        await callback.message.answer(text=LEXICON["/go"], reply_markup=kb.main_builder)
         await state.set_state(GeneralConditions.first_choice)
     await callback.answer()
 
 # Обрабатываем непонятные сообщения пользователя в состоянии выбора года
 @router.message(StateFilter(GeneralConditions.select_year))
 async def process_unknown_input_in_year_state(message: Message):
-    await message.answer(text=LEXICON["no_years"], reply_markup=years_films)
+    await message.answer(text=LEXICON["no_years"], reply_markup=kb.years_films)
 
 # Этот хендлер будет срабатывать если выбран жанр фильма и переводить в состояние выбора рейтинга
 @router.callback_query(StateFilter(GeneralConditions.select_genre))
@@ -123,19 +125,19 @@ async def process_select_rating_command(callback: CallbackQuery, state: FSMConte
         # Сохраняем выбранный жанр
         await state.update_data(genre=genre_data)
         # Переходим к следующему шагу - выбору рейтинга
-        await callback.message.edit_text(text=LEXICON["rating"], reply_markup=rating_films)
+        await callback.message.edit_text(text=LEXICON["rating"], reply_markup=kb.rating_films)
         # Устанавливаем состояние выбора рейтинга
         await state.set_state(GeneralConditions.select_rating)
     elif genre_data == "genre_back":
         # Кнопка "Назад". Устанавливаем состояние выбора года и появление кнопок выбора года
-        await callback.message.edit_text(text=LEXICON["year"], reply_markup=years_films)
+        await callback.message.edit_text(text=LEXICON["year"], reply_markup=kb.years_films)
         await state.set_state(GeneralConditions.select_year)
     await callback.answer()
 
 # Обрабатываем непонятные сообщения пользователя в состоянии выбора года
 @router.message(StateFilter(GeneralConditions.select_genre))
 async def process_unknown_input_in_genre_state(message: Message):
-    await message.answer(text=LEXICON["no_genre"], reply_markup=genre_films)
+    await message.answer(text=LEXICON["no_genre"], reply_markup=kb.genre_films)
 
 # Этот хэндлер будет срабатывать если выбран рейтинг и переводить в состояние выбора времени просмотра
 @router.callback_query(StateFilter(GeneralConditions.select_rating))
@@ -146,19 +148,19 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
         # Сохраняем выбранный жанр
         await state.update_data(rating=rating_data)
         # Переходим к следующему шагу - выбору времени просмотра
-        await callback.message.edit_text(text=LEXICON["time"], reply_markup=time_films)
+        await callback.message.edit_text(text=LEXICON["time"], reply_markup=kb.time_films)
         # Устанавливаем состояние выбора времени просмотра
         await state.set_state(GeneralConditions.select_time)
     elif rating_data == "rating_back":
         # Кнопка "Назад". Устанавливаем состояние выбора жанра и появление кнопок выбора жанра
-        await callback.message.edit_text(text=LEXICON["genre"], reply_markup=genre_films)
+        await callback.message.edit_text(text=LEXICON["genre"], reply_markup=kb.genre_films)
         await state.set_state(GeneralConditions.select_genre)
     await callback.answer()
 
 # Обрабатываем непонятные сообщения пользователя в состоянии выбора рейтинга
 @router.message(GeneralConditions.select_rating)
 async def process_unknown_input_in_rating_state(message: Message):
-    await message.answer(text=LEXICON["no_rating"], reply_markup=rating_films)
+    await message.answer(text=LEXICON["no_rating"], reply_markup=kb.rating_films)
 
 
 # Этот хэндлер будет срабатывать если выбрано время просмотра и переводить в состояние "показ результатов"
@@ -199,7 +201,7 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
 
         # print(results)
         if results:
-            kriter = (f"<b>Ваши критерии: </b>\n"
+            criteria = (f"<b>Ваши критерии: </b>\n"
                           f"📅Год: {readable["year"]}\n"
                           f"🎭Жанр: {readable["genre"]}\n"
                           f"⭐️Рейтинг: {readable["rating"]}\n"
@@ -209,20 +211,20 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
             films_text = db.format_movie(results)
             # print(films_text)
             await callback.message.edit_text(
-                text=f"{kriter}\n<b>Список фильмов по вашим критериям: </b>\n{films_text}",
-                reply_markup=sort_films
+                text=f"{criteria}\n<b>Список фильмов по вашим критериям: </b>\n{films_text}",
+                reply_markup=kb.sort_films
             )
             # Сохраняем список фильмов
             await state.update_data(films=films_text)
             # Устанавливаем состояние показа результатов
             await state.set_state(GeneralConditions.showing_results)
         else:
-            await callback.message.edit_text(text=LEXICON["no_results"], reply_markup=main_builder)
+            await callback.message.edit_text(text=LEXICON["no_results"], reply_markup=kb.main_builder)
             # Устанавливаем состояние первого выбора, откроются кнопки главного меню
             await state.set_state(GeneralConditions.first_choice)
     elif time_data == "time_back":
         # Кнопка "Назад". Устанавливаем состояние выбора рейтинга и появление кнопок выбора рейтинга
-        await callback.message.edit_text(text=LEXICON["rating"], reply_markup=rating_films)
+        await callback.message.edit_text(text=LEXICON["rating"], reply_markup=kb.rating_films)
         # Устанавливаем состояние выбора рейтинга
         await state.set_state(GeneralConditions.select_rating)
     await callback.answer()
@@ -230,7 +232,7 @@ async def process_select_time_command(callback: CallbackQuery, state: FSMContext
 # Обрабатываем непонятные сообщения пользователя в состоянии выбора времени просмотра
 @router.message(StateFilter(GeneralConditions.select_time))
 async def process_unknown_input_in_time_state(message: Message):
-    await message.answer(text=LEXICON["no_time"], reply_markup=time_films)
+    await message.answer(text=LEXICON["no_time"], reply_markup=kb.time_films)
 
 # Этот хэндлер будет срабатывать когда будет виден список рекомендаций и когда пользователь захочет отсортировать
 # список
@@ -251,7 +253,7 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
         # Обновляем список фильмов
         await state.update_data(films=films_text)
         # Выводим отсортированный список по рейтингу
-        await callback.message.answer(text=films_text, reply_markup=sort_films)
+        await callback.message.answer(text=films_text, reply_markup=kb.sort_films)
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.showing_results)
     elif sort_data == "sorted_year":
@@ -266,7 +268,7 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
         # Обновляем список фильмов
         await state.update_data(films=films_text)
         # Выводим отсортированный список по году
-        await callback.message.answer(text=films_text, reply_markup=sort_films)
+        await callback.message.answer(text=films_text, reply_markup=kb.sort_films)
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.showing_results)
     elif sort_data == "sorted_like":
@@ -280,7 +282,7 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
         # Обновляем список фильмов
         await state.update_data(films=films_text)
         # Выводим отсортированный список по лайкам
-        await callback.message.answer(text=films_text, reply_markup=sort_films)
+        await callback.message.answer(text=films_text, reply_markup=kb.sort_films)
         # Остаемся в том же состоянии
         await state.set_state(GeneralConditions.showing_results)
     elif sort_data == "review_film":
@@ -290,7 +292,7 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
         await state.set_state(GeneralConditions.film_review)
     elif sort_data == "sort_main_menu":
         # Открываем кнопки главного меню и переводим в состояние первого выбора в главном меню
-        await callback.message.answer(text=LEXICON["/go"], reply_markup=main_builder)
+        await callback.message.answer(text=LEXICON["/go"], reply_markup=kb.main_builder)
         # Указываем состояние "первого выбора"
         await state.set_state(GeneralConditions.first_choice)
     await callback.answer()
@@ -298,7 +300,7 @@ async def process_sorting_selection(callback: CallbackQuery, state: FSMContext):
 # Обрабатываем непонятные сообщения пользователя в состоянии показа результатов
 @router.message(StateFilter(GeneralConditions.showing_results))
 async def process_unknown_input_in_showing_state(message: Message):
-    await message.answer(text=LEXICON["no_show"], reply_markup=sort_films)  #?
+    await message.answer(text=LEXICON["no_show"], reply_markup=kb.sort_films)  #?
 
 # Этот хэндлер будет срабатывать, когда пользователь введет номер фильма, чтобы посмотреть его трейлер.
 @router.message(StateFilter(GeneralConditions.film_review),
@@ -333,7 +335,7 @@ async def process_film_number(message: Message, state: FSMContext):
             else:
                 # Если трейлера нет в базе
                 response_text = f"{film_info}\n\n😔 <b>К сожалению, трейлер для этого фильма не найден</b>"
-            keyboard = get_trailer_keyboard(trailer_url)
+            keyboard = kb.get_trailer_keyboard(trailer_url)
             # Кнопки для навигации
 
             await message.answer(
@@ -367,7 +369,7 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
         data = await state.get_data()
         user_current_films = data.get("films")
         # Выводим список фильмов и просим снова выбрать обзор какого смотреть
-        await callback.message.edit_text(text=user_current_films, reply_markup=sort_films)
+        await callback.message.edit_text(text=user_current_films, reply_markup=kb.sort_films)
         # Переводим в состояние выбора из списка рекомендаций
         await state.set_state(GeneralConditions.showing_results)
 
@@ -380,19 +382,19 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
         if new_like is not None:
             await callback.message.answer(
                 text=f"{LEXICON['like']}{new_like} лайков\nНачните поиск заново",
-                reply_markup=main_builder
+                reply_markup=kb.main_builder
             )
             await state.set_state(GeneralConditions.first_choice)
         else:
             await callback.message.answer(
                 text=LEXICON["again_likes"],
-                reply_markup=main_builder
+                reply_markup=kb.main_builder
             )
             await state.set_state(GeneralConditions.first_choice)
         await state.update_data()
     elif trailer_data == "main_menu":
         # Открываем кнопки главного меню и переводим в состояние первого выбора в главном меню
-        await callback.message.answer(text=LEXICON["/go"], reply_markup=main_builder)
+        await callback.message.answer(text=LEXICON["/go"], reply_markup=kb.main_builder)
         # Указываем состояние "первого выбора"
         await state.set_state(GeneralConditions.first_choice)
     await callback.answer()

@@ -3,9 +3,13 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from .states import GeneralConditions
-from keyboards.keyboards import *
+from keyboards.keyboards import (
+get_trailer_random_film,
+main_builder
+)
 from config.config import MOVIES_JSON
 from classes.film_random import RandomFilm
+from lexicon.lexicon import LEXICON
 
 
 

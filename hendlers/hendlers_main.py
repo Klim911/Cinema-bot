@@ -6,7 +6,7 @@ from aiogram.types import Message, ReplyKeyboardRemove
 
 from lexicon.lexicon import LEXICON
 from .states import GeneralConditions
-from keyboards.keyboards import *
+from keyboards.keyboards import main_builder
 
 
 router = Router()
@@ -35,5 +35,5 @@ async def process_help_command(message: Message):
 
 
 @router.message(StateFilter(default_state))
-async def process_unknown_message(message: Message, state: FSMContext):
+async def process_unknown_message(message: Message):
     await message.answer(text=LEXICON["please"], reply_markup=main_builder)
