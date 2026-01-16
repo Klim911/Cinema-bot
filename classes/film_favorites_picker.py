@@ -42,7 +42,7 @@ class FavoritesFilms:
         # 1. Удаляем фильм из списка лайкнутых фильмов
         # Достаем, из FSM наш список с избранными фильмами
         data = await state.get_data()
-        movie = data.get("the_last_movie")
+        movie = data.get("title_film")
         # Достаем список лайкнутых фильмов
         films = data.get("favorites")
         # Удаляем название фильма из списка
@@ -56,7 +56,7 @@ class FavoritesFilms:
             if i["title"] == movie:
                 current_likes = i.get("likes", 0)
                 i["likes"] = current_likes - 1
-            break
+                break
 
         # 3. Сохраняем обновленные данные фильмов
         async with aiofiles.open(self.json_file_path, "w", encoding='utf-8') as fe:

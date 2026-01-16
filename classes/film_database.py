@@ -3,9 +3,10 @@ import aiofiles
 from typing import List, Dict, Optional
 from pathlib import Path
 from config.config import MOVIES_JSON
+from classes.base_like_handler import BaseFilmLike
 
 
-class FilmDatabase:
+class FilmDatabase(BaseFilmLike):
     """База данных фильмов"""
     def __init__(self, json_file=None):
         if json_file is None:
@@ -195,50 +196,3 @@ class FilmDatabase:
             "rating": rating_mapping.get(rating_callback, "Любой рейтинг") if rating_callback else "Любой рейтинг",
             "time": time_mapping.get(time_callback, "Любая длительность") if time_callback else "Любая длительность"
         }
-
-    async def async_add_like_to_film(self,
-            state,
-            film_title: str,
-            json_file_path: str = "movies.json",
-            ):
-
-        # 1. Проверяем, лайкал ли пользователь уже этот фильм
-        data = await state.get_data()
-        list_favorites = data.get("favorites")
-        if list_favorites is None:
-            list_favorites = []
-
-        film_title_lower = film_title.lower()
-
-        for i in list_favorites:
-            if i.lower() == film_title_lower.lower():
-                return None
-
-        # 2. Если пользователь не лайкал этот фильм, обновляем список в состоянии
-        list_favorites.append(film_title)
-        await state.update_data(favorites=list_favorites)
-
-        # 3. Читаем данные о фильмах
-        async with aiofiles.open(json_file_path, 'r', encoding='utf-8') as f:
-            content = await f.read()
-            data = json.loads(content)
-
-        # 4. Ищем фильм и добавляем лайк
-        film_found = False
-        new_likes = 0
-
-        for film in data["films"]:
-            if film["title"].lower() == film_title_lower:
-                film["likes"] = film.get("likes", 0) + 1
-                new_likes = film["likes"]
-                film_found = True
-                break
-
-        if not film_found:
-            return None
-
-        # 5. Сохраняем обновленные данные фильмов
-        async with aiofiles.open(self.json_file_path, 'w', encoding='utf-8') as f:
-            await f.write(json.dumps(data, ensure_ascii=False, indent=2))
-
-        return new_likes

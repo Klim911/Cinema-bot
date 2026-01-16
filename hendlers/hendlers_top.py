@@ -65,6 +65,7 @@ async def view_first_list(callback: CallbackQuery, state: FSMContext):    # Пр
         await callback.message.answer(text=LEXICON["/go"], reply_markup=main_builder)
         # Указываем состояние "первого выбора"
         await state.set_state(GeneralConditions.first_choice)
+    await callback.answer()
 
 # Обрабатываем непонятные сообщения пользователя в состоянии первого показа списка фильмов по рейтингу
 @router.message(StateFilter(GeneralConditions.sorted_rating_list_films))
@@ -90,9 +91,9 @@ async def process_film_number(message: Message, state: FSMContext):
         if film_number in numbers:
             # Сохраняем номер выбранного фильма
             await state.update_data(film_number=film_number)
-            result = user.beautiful_format_movie(films, film_number)             # Красивый вывод текста выбранного фильма
+            result = await user.beautiful_format_movie(films, film_number, state) # Красивый вывод текста выбранного фильма
             keyboard = get_trailer_keyboard(user.trailer(films, film_number)) # Делаем переход на трейлер
-            # Выводим описание фильма, и инлайн клавиатуру
+            # Выводим описание фильма и inline-клавиатуру
             await message.answer(text=result, reply_markup=keyboard, parse_mode="HTML")
             # Устанавливаем состояние просмотра трейлера
             await state.set_state(GeneralConditions.top_trailer_film)
@@ -123,19 +124,22 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
         user_data = await state.get_data()
         user_number = user_data.get("film_number")          # Выбранный пользователем номер из списка
         user_list = user_data.get("films_top")              # Список фильмов с их номерами, который ранее выводил бот
+        title_film = user_data.get('title_film')
 
         # Вызываем функцию, которая проставит лайк
-        new_like = await user.add_like_to_film(sp=user_list, number=user_number, state=state)
+        new_like = await user.add_like_to_film(title=title_film, state=state)
         if new_like is not None:
             await callback.message.answer(
                 text=f"{LEXICON['like']}{new_like} лайков\nНачните поиск заново",
                 reply_markup=main_builder
             )
+            await state.set_state(GeneralConditions.first_choice)
         else:
             await callback.message.answer(
                 text=LEXICON["again_likes"],
                 reply_markup=main_builder
             )
+            await state.set_state(GeneralConditions.first_choice)
 
     elif data_trailer == "main_menu":
         # Открываем кнопки главного меню и переводим в состояние первого выбора в главном меню

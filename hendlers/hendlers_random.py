@@ -27,6 +27,8 @@ async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
         await state.update_data(random_film=film)
         # Ссылка на трейлер
         trailer_url = film['trailer_url']
+        title_film = film['title']
+        await state.update_data(title_film=title_film)
         keyboard = get_trailer_random_film(trailer_url)
         # Красиво выводим
         print_film = user.format_film(film)
@@ -35,8 +37,10 @@ async def pick_random_movie(callback: CallbackQuery, state: FSMContext):
         await state.set_state(GeneralConditions.random_film)
 
     elif data == "random_like_film":
+        user_data = await state.get_data()
+        film_title = user_data.get("title_film")
         # Вызываем функцию, которая проставит лайк
-        new_like = await user.add_like_random_film(state=state)
+        new_like = await user.add_like_to_film(title=film_title,state=state)
         if new_like is not None:
             await callback.message.answer(
                 text=f"{LEXICON['like']}{new_like} лайков.\n\nВозвращаемся в главное меню",

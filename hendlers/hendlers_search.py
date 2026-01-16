@@ -33,7 +33,7 @@ async def handle_main_menu(message: Message, state: FSMContext):
         # Устанавливаем состояние выбора года
         await state.set_state(GeneralConditions.select_year)
     elif message.text == LEXICON["list_films"]:
-        user = RatingsFilms("movies.json")
+        user = RatingsFilms(MOVIES_JSON)
         # Страница по умолчанию
         page = 0
         # Делаем и выводим первую страницу фильмов по рейтингу
@@ -48,7 +48,7 @@ async def handle_main_menu(message: Message, state: FSMContext):
         # Устанавливаем состояние Фильмов по рейтингу
         await state.set_state(GeneralConditions.sorted_rating_list_films)
     elif message.text == LEXICON["select_films"]:
-        user = RandomFilm("movies.json")
+        user = RandomFilm(MOVIES_JSON)
         # Делаем и выводим рандомный фильма
         # Выбирается, рандомный фильм
         film = user.random_film()
@@ -57,6 +57,8 @@ async def handle_main_menu(message: Message, state: FSMContext):
             await state.update_data(random_film=film)
         # Берем ссылку трейлера для клавиатуры
         trailer_film = film['trailer_url']
+        title_film = film['title']
+        await state.update_data(title_film=title_film)
         # Красивый вывод фильма
         print_film = user.format_film(film)
         keyboard = kb.get_trailer_random_film(trailer_film)
@@ -65,7 +67,7 @@ async def handle_main_menu(message: Message, state: FSMContext):
         await state.set_state(GeneralConditions.random_film)
     elif message.text == LEXICON["favorit_films"]:
         # Получаем случайный фильм из списка избранных фильмов
-        user = FavoritesFilms("movies.json")
+        user = FavoritesFilms(MOVIES_JSON)
         # Функция случайного выбора фильма из списка
         film = await user.processing_film_favorites(state=state)
         if film is not None:
@@ -73,6 +75,8 @@ async def handle_main_menu(message: Message, state: FSMContext):
             criteria_film = user.movie_favorites(film)
             # Берем ссылку трейлера для клавиатуры
             trailer_film = criteria_film['trailer_url']
+            title_film = criteria_film['title']
+            await state.update_data(title_film=title_film)
             # Функция красивого вывода фильма
             print_film = user.format_movie(criteria_film)
             # Inline-клавиатура
@@ -378,7 +382,7 @@ async def processing_commands_in_trailer(callback: CallbackQuery, state: FSMCont
         data = await state.get_data()
         user_choice = data.get("selected_film")
         film_title = user_choice['title']
-        new_like = await db.async_add_like_to_film(state=state, film_title=film_title)
+        new_like = await db.add_like_to_film(title=film_title, state=state)
         if new_like is not None:
             await callback.message.answer(
                 text=f"{LEXICON['like']}{new_like} лайков\nНачните поиск заново",

@@ -31,7 +31,7 @@ async def pick_favorite_movie(callback: CallbackQuery, state: FSMContext):
         # Берем, название фильма (это надо для удаления из списка лайконых фильмов, если пользователь
         # нажмет клавишу убрать лайк)
         title_film = criteria_film['title']
-        await state.update_data(the_last_movie=title_film)
+        await state.update_data(title_film=title_film)
         # Берем ссылку трейлера для клавиатуры
         trailer_film = criteria_film['trailer_url']
         # Функция красивого вывода фильма

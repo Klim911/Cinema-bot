@@ -1,12 +1,11 @@
 import json
 from pathlib import Path
-import aiofiles
 
-from aiogram.fsm.context import FSMContext
 from config.config import MOVIES_JSON
+from classes.base_like_handler import BaseFilmLike
 
 
-class RatingsFilms:
+class RatingsFilms(BaseFilmLike):
 
     def __init__(self, json_file):
         if json_file is None:
@@ -55,14 +54,15 @@ class RatingsFilms:
         return final
 
     @staticmethod
-    def beautiful_format_movie(sp: list, number):
+    async def beautiful_format_movie(sp: list, number, state):
         """Красивый вывод фильма выбранный пользователем"""
         dano = 0
         for i in sp:
             for j, d in i.items():
                 if number == d:
                     dano = i
-
+        title_film = dano['title']
+        await state.update_data(title_film=title_film)
         text = (f"🎬 <b>{dano['title']}</b>\n📅 Год: {dano['years']}\n⭐ Рейтинг: {dano['ratings']}\n"
                 f"⏱️ Длительность: {dano['duration']}\n🎭 Жанры: {', '.join(dano['genres'])}\n────────────")
         if 'trailer_url' in dano:
@@ -82,53 +82,6 @@ class RatingsFilms:
                     pr = i
         if 'trailer_url' in pr:
             return pr['trailer_url']
-
-    async def add_like_to_film(self, sp, number, state: FSMContext):
-        """Добавляем лайк фильму"""
-        # 1. Находим название фильма
-        film = 0
-        for i in sp:
-            for j, d in i.items():
-                if number == d:
-                    film = i
-                    break
-        film_title = film['title']
-
-        # 2. Проверяем, лайкал ли пользователь уже этот фильм
-        data = await state.get_data()
-        list_favorites = data.get("favorites")
-        if list_favorites is None:
-            list_favorites = []
-
-        film_title_lower = film_title.lower()
-
-        for i in list_favorites:
-            if i.lower() == film_title_lower:
-                return None
-
-        # 3. Если пользователь не лайкал этот фильм, обновляем список в состоянии
-        list_favorites.append(film_title)
-        await state.update_data(favorites=list_favorites)
-
-        # 4. Ищем фильм и добавляем лайк
-        film_found = False
-        new_likes = 0
-
-        for i in self.data["films"]:
-            if i["title"].lower() == film_title_lower:
-                i["likes"] = i.get("likes", 0) + 1
-                new_likes = i["likes"]
-                film_found = True
-                break
-
-        if not film_found:
-            return None
-
-        # 5. Сохраняем обновленные данные фильмов
-        async with aiofiles.open(self.json_file_path, "w", encoding='utf-8') as fe:
-            await fe.write(json.dumps(self.data, ensure_ascii=False, indent=2))
-
-        return new_likes
 
     @staticmethod
     def format_page(films):
