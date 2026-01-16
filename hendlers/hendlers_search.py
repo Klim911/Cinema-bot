@@ -13,8 +13,6 @@ from classes.film_random import RandomFilm
 from classes.film_favorites_picker import FavoritesFilms
 
 
-
-
 router = Router()
 db = FilmDatabase(MOVIES_JSON)
 

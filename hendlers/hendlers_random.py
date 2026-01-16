@@ -12,7 +12,6 @@ from classes.film_random import RandomFilm
 from lexicon.lexicon import LEXICON
 
 
-
 router = Router()
 user = RandomFilm(MOVIES_JSON)
 

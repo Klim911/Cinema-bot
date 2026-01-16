@@ -1,5 +1,4 @@
 import json
-import aiofiles
 from typing import List, Dict, Optional
 from pathlib import Path
 from config.config import MOVIES_JSON
@@ -9,6 +8,8 @@ from classes.base_like_handler import BaseFilmLike
 class FilmDatabase(BaseFilmLike):
     """База данных фильмов"""
     def __init__(self, json_file=None):
+        # pylint: disable=super-init-not-called
+        # flake8: noqa
         if json_file is None:
             self.json_file_path = MOVIES_JSON
         else:
