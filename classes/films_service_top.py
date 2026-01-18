@@ -8,8 +8,8 @@ from classes.base_like_handler import BaseFilmLike
 class RatingsFilms(BaseFilmLike):
 
     def __init__(self, json_file):
-        # pylint: disable=super-init-not-called
-        # flake8: noqa
+        super().__init__()
+
         if json_file is None:
             self.json_file_path = MOVIES_JSON
         else:
