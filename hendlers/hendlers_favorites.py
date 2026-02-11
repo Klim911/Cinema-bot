@@ -22,26 +22,35 @@ user = FavoritesFilms(MOVIES_JSON)
 async def pick_favorite_movie(callback: CallbackQuery, state: FSMContext):
     data = callback.data
     if data == "favorite_next_film":
-        # Получаем случайный фильм из списка избранных фильмов
-        # Функция случайного выбора фильма из списка
-        film = await user.processing_film_favorites(state=state)
-        # Функция нахождения словаря фильма
-        criteria_film = user.movie_favorites(film)
-        # Сохраняем название последнего выданного фильма из списка лайков
-        # Берем, название фильма (это надо для удаления из списка лайконых фильмов, если пользователь
-        # нажмет клавишу убрать лайк)
-        title_film = criteria_film['title']
-        await state.update_data(title_film=title_film)
-        # Берем ссылку трейлера для клавиатуры
-        trailer_film = criteria_film['trailer_url']
-        # Функция красивого вывода фильма
-        print_film = user.format_movie(criteria_film)
-        # inline-клавиатура
-        keyboard = get_trailer_favorite_film(trailer_film)
-        # Выводим случайный фильм и inline-клавиатуру
-        await callback.message.edit_text(text=print_film, reply_markup=keyboard, parse_mode="HTML")
-        # Остаемся в том же состоянии
-        await state.set_state(GeneralConditions.favorite_film)
+        user_data = await state.get_data()
+        films = user_data.get("favorites")
+        if len(films) == 1:
+            criteria_film = user.movie_favorites(films[0])
+            print_film = user.format_movie(criteria_film)
+            trailer_film = criteria_film['trailer_url']
+            keyboard = get_trailer_favorite_film(trailer_film)
+            await callback.message.edit_text(text='В вашем списке пока что один фильм' + print_film,
+                                             reply_markup=keyboard, parse_mode="HTML")
+        else:
+            # Функция случайного выбора фильма из списка
+            film = await user.processing_film_favorites(state=state)
+            # Функция нахождения словаря фильма
+            criteria_film = user.movie_favorites(film)
+            if criteria_film is not None:
+                title_film = criteria_film['title']
+                await state.update_data(title_film=title_film)
+            else:
+                await callback.message.edit_text(text=LEXICON["no_favorites"], reply_markup=main_builder)
+            # Берем ссылку трейлера для клавиатуры
+            trailer_film = criteria_film['trailer_url']
+            # Функция красивого вывода фильма
+            print_film = user.format_movie(criteria_film)
+            # inline-клавиатура
+            keyboard = get_trailer_favorite_film(trailer_film)
+            # Выводим случайный фильм и inline-клавиатуру
+            await callback.message.edit_text(text=print_film, reply_markup=keyboard, parse_mode="HTML")
+            # Остаемся в том же состоянии
+            await state.set_state(GeneralConditions.favorite_film)
 
     elif data == "favorite_dislike_film":
         # Функция удаления фильма из списка избранных фильмов

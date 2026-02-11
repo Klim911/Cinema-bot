@@ -26,6 +26,9 @@ class FavoritesFilms:
         if len(films) != 0:
             random_film = random.choice(films)
             return random_film
+        elif len(films) == 1:
+            random_film = films[0]
+            return random_film
         else:
             return None
 
